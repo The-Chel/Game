@@ -6,54 +6,84 @@
   <body>
     <canvas id="myCanvas" height="850px" width="850px"></canvas>
     <div style="width: 850px; display: flex; justify-content: center;">
-      <div onclick="draw()" style="background-color: lightblue; width: 150px; height: 50px; text-align: center; vertical-align: middle;">Hello</div>
-      <div onclick="CreateCheckBoard()" style="background-color: lightgreen; width: 150px; height: 50px; text-align: center; vertical-align: middle;">Bye</div>
+      <div onclick="render()" style="background-color: lightblue; width: 150px; height: 50px; display: flex; align-items: center; justify-content: center;">Render</div>
+      <div  style="background-color: lightgreen; width: 150px; height: 50px; text-align: center; vertical-align: middle;">Bye</div>
     </div>
     <script>
-      // MODEL
+// MODEL
 
-      let boardSquare = []
+      let boardSquare = [];
       // {
-      //   localId, //a1, a2, a3... h8
-      //   localX,
+      //   id, //a1, a2, a3... h8
+      //   x,
       //   licalY
       // };
+      const letters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
+      const numbers = [1, 2, 3, 4, 5, 6, 7, 8];
 
       // fills array 'boardSquare' with objects contining ID and location of square
       function giveId(i, a, incrI, incrA) {
-        localId = '' + letters[i] + numbers[a];
-        localX = 25+incrI;
-        localY = 25+incrA;
+        id = '' + letters[i] + numbers[a];
+        x = 25+incrI;
+        y = 25+incrA;
         boardSquare.push({
-          localId,
-          localX,
-          localY
+          id,
+          x,
+          y
         });
       }
 
-      // VISUAL
+      let figure = [];
+      // isPicked, locationX, locationY, id
+      function figureAdd(id) {
+        let x;
+        let y;
+        boardSquare.forEach((element, index) => {
+          if (id === element.id) {
+            x = element.x;
+            y = element.y;
+            element.isEmpty = false; //not working for some reason =(
+          }
+        });
+        figure.push({
+          x: x,
+          y: y,
+          id: id
+        });
+        render();
+      }
+      
+
+// VISUAL
 
       const canvas = document.getElementById('myCanvas');
       canvas.style.backgroundColor = 'rgb(148, 106, 62)';
 
       const ctx = canvas.getContext('2d');
 
-      function draw() { // not yet working 
-        console.log('hi');
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        
-        // CreateCheckBoard();
+      function render() { // erases the screen, updates visual inforamtion
+        console.log('render is done');
+        ctx.clearRect(0, 0, canvas.width, canvas.height); // deletes evrything
+        createCheckBoard(); // draws checkbox
+        figureDraw(); // draws figures
       }
-      // setInterval(draw, 1000);
+      // setInterval(render, 1000);
 
-      function CreateCheckBoard() {
+      function figureDraw() {
+        ctx.fillStyle = 'cyan';
+        // ctx.fillRect(25+x, 25+y, 50, 50);
+        figure.forEach(element => {
+          ctx.fillRect(25+element.x, 25+element.y, 50, 50);
+        });
+      }
+
+      function createCheckBoard() {
         let isBlack = true;
-        let localId;
-        let localX;
-        let localY;
+        let id;
+        let x;
+        let y;
+        boardSquare = [];
 
-        const letters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
-        const numbers = [1, 2, 3, 4, 5, 6, 7, 8];
         // draws checkboard
         for (let a = 0; a < 8; a++) {
           const incrA = a * 100;
@@ -81,21 +111,52 @@
         }
       }
 
-      CreateCheckBoard();
+      render();
 
-      // CALCULATION
+// CALCULATION
 
       // on click sends cursor's location to function 
       canvas.addEventListener('click', (e) => {
-        findSquare(e.offsetX, e.offsetY)
+        findSquare(e.offsetX, e.offsetY) // if square isEmpty = false, then find figure on the square
+        figureFind();                   // wait until next mouse input, move figure to other square if is Empty = true
       })
         //finds clicked square
       function findSquare(clickX, clickY) {
+        let returnId;
         boardSquare.forEach(element => {
-          if (clickX > element.localX && clickX < (element.localX+100) && clickY > element.localY && clickY < (element.localY+100)) {
-            console.log(element.localId);
+          if (clickX > element.x && clickX < (element.x+100) && clickY > element.y && clickY < (element.y+100)) {
+            returnId = element.id;
+            console.log(element.id);
           }
         });
+        return returnId;
+      }
+      function figureFind(id) {
+        figure.forEach(element => {
+          if (id === element.id) {
+            while (condition) {
+              // continue
+            }
+          }
+        });
+      }
+
+      function figureRemove(id) {
+       figure = figure.filter((e) => {
+          if (id === e.id) {
+            return false;
+          } else {
+            return true;
+          }
+        })
+        boardSquare.forEach((e,i) => {
+          if (id === e.id) boardSquare[i].isEmpty = true; //not working for some reason =(
+        });
+        render();
+      }
+      
+      function figureMove() {
+        
       }
     </script>
   </body>
