@@ -10,13 +10,7 @@
       <div onclick="CreateCheckBoard()" style="background-color: lightgreen; width: 150px; height: 50px; text-align: center; vertical-align: middle;">Bye</div>
     </div>
     <script>
-
-      const canvas = document.getElementById('myCanvas');
-      canvas.style.backgroundColor = 'rgb(148, 106, 62)';
-
-      const ctx = canvas.getContext('2d');
-
-      canvas.addEventListener('click', ((e) => console.log(e.target)))
+      // MODEL
 
       let boardSquare = []
       // {
@@ -24,7 +18,34 @@
       //   localX,
       //   licalY
       // };
-      
+
+      // fills array 'boardSquare' with objects contining ID and location of square
+      function giveId(i, a, incrI, incrA) {
+        localId = '' + letters[i] + numbers[a];
+        localX = 25+incrI;
+        localY = 25+incrA;
+        boardSquare.push({
+          localId,
+          localX,
+          localY
+        });
+      }
+
+      // VISUAL
+
+      const canvas = document.getElementById('myCanvas');
+      canvas.style.backgroundColor = 'rgb(148, 106, 62)';
+
+      const ctx = canvas.getContext('2d');
+
+      function draw() { // not yet working 
+        console.log('hi');
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        // CreateCheckBoard();
+      }
+      // setInterval(draw, 1000);
+
       function CreateCheckBoard() {
         let isBlack = true;
         let localId;
@@ -33,7 +54,7 @@
 
         const letters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
         const numbers = [1, 2, 3, 4, 5, 6, 7, 8];
-        
+        // draws checkboard
         for (let a = 0; a < 8; a++) {
           const incrA = a * 100;
 
@@ -52,31 +73,30 @@
             }          
 
             ctx.fillRect (25+incrI, 25+incrA, 100, 100);
-            localId = '' + letters[a] + numbers[i];
-            localX = 25+incrI;
-            localY = 25+incrA;
-            boardSquare.push({
-              localId,
-              localX,
-              localY
-            });
-            
+            // Gives Id's
+            giveId(i, a, incrI, incrA);            
             isBlack = !isBlack;
           }
         isBlack = !isBlack;  
         }
       }
 
-      function draw() {
-        console.log('hi');
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        // CreateCheckBoard();
-      }
-      // setInterval(draw, 1000);
-
       CreateCheckBoard();
 
+      // CALCULATION
 
+      // on click sends cursor's location to function 
+      canvas.addEventListener('click', (e) => {
+        findSquare(e.offsetX, e.offsetY)
+      })
+        //finds clicked square
+      function findSquare(clickX, clickY) {
+        boardSquare.forEach(element => {
+          if (clickX > element.localX && clickX < (element.localX+100) && clickY > element.localY && clickY < (element.localY+100)) {
+            console.log(element.localId);
+          }
+        });
+      }
     </script>
   </body>
 </html>
