@@ -5,8 +5,9 @@
   </head>
   <body>
     <canvas id="myCanvas" height="850px" width="850px"></canvas>
-    <div style="display: flex; justify-content: center;">
-      <div style="background-color: lightblue; width: 150px; height: 50px; text-align: center; vertical-align: middle;">Hello</div>
+    <div style="width: 850px; display: flex; justify-content: center;">
+      <div onclick="draw()" style="background-color: lightblue; width: 150px; height: 50px; text-align: center; vertical-align: middle;">Hello</div>
+      <div onclick="CreateCheckBoard()" style="background-color: lightgreen; width: 150px; height: 50px; text-align: center; vertical-align: middle;">Bye</div>
     </div>
     <script>
 
@@ -15,29 +16,9 @@
 
       const ctx = canvas.getContext('2d');
 
+      canvas.addEventListener('click', ((e) => console.log(e.target)))
       
-      
-      function CreateCheckBoard () {
-        for (let a = 0; a < 800; a = a + 200) {       
-          for (let i = 0; i < 800; i = i + 200) {
-          console.log(i);
-          ctx.fillStyle = 'black'
-          ctx.fillRect (25+i, 25+a, 100, 100);
-          ctx.fillStyle = 'grey'
-          ctx.fillRect (125+i, 25+a, 100, 100);
-          ctx.fillStyle = 'white'
-          ctx.font = '25px Arial';
-          ctx.fillText(i, 50+i, 25);
-          }
-          for (let i = 0; i < 800; i = i + 200) {
-          ctx.fillStyle = 'grey'
-          ctx.fillRect (25+i, 125+a, 100, 100);
-          ctx.fillStyle = 'black'
-          ctx.fillRect (125+i, 125+a, 100, 100);
-          }  
-        }
-      }
-      function CreateCheckBoardAlt() {
+      function CreateCheckBoard() {
         let isBlack = true;
         const letters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
         const numbers = [1, 2, 3, 4, 5, 6, 7, 8];
@@ -62,12 +43,19 @@
 
             
             isBlack = !isBlack;
-            console.log(isBlack);
           }
         isBlack = !isBlack;  
         }
       }
-      CreateCheckBoardAlt();
+
+      function draw() {
+        console.log('hi');
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        // CreateCheckBoard();
+      }
+      // setInterval(draw, 1000);
+
+      CreateCheckBoard();
 
 
     </script>
