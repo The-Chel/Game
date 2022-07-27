@@ -17,11 +17,23 @@
       const ctx = canvas.getContext('2d');
 
       canvas.addEventListener('click', ((e) => console.log(e.target)))
+
+      let boardSquare = []
+      // {
+      //   localId, //a1, a2, a3... h8
+      //   localX,
+      //   licalY
+      // };
       
       function CreateCheckBoard() {
         let isBlack = true;
+        let localId;
+        let localX;
+        let localY;
+
         const letters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
         const numbers = [1, 2, 3, 4, 5, 6, 7, 8];
+        
         for (let a = 0; a < 8; a++) {
           const incrA = a * 100;
 
@@ -40,7 +52,14 @@
             }          
 
             ctx.fillRect (25+incrI, 25+incrA, 100, 100);
-
+            localId = '' + letters[a] + numbers[i];
+            localX = 25+incrI;
+            localY = 25+incrA;
+            boardSquare.push({
+              localId,
+              localX,
+              localY
+            });
             
             isBlack = !isBlack;
           }
