@@ -4,6 +4,7 @@
     <title>Chess</title>
   </head>
   <body>
+    <button onclick="figureAdd('a1')">Add a1 figure</button>
     <canvas id="myCanvas" height="850px" width="850px"></canvas>
     <div style="width: 850px; display: flex; justify-content: center;">
       <div onclick="render()" style="background-color: lightblue; width: 150px; height: 50px; display: flex; align-items: center; justify-content: center;">Render</div>
@@ -38,11 +39,12 @@
       function figureAdd(id) {
         let x;
         let y;
-        boardSquare.forEach((element, index) => {
+        boardSquare.forEach(element => {
           if (id === element.id) {
             x = element.x;
             y = element.y;
-            element.isEmpty = false; //not working for some reason =(
+
+            element.isEmpty = false;
           }
         });
         figure.push({
@@ -52,7 +54,7 @@
         });
         render();
       }
-      
+
 
 // VISUAL
 
@@ -60,6 +62,7 @@
       canvas.style.backgroundColor = 'rgb(148, 106, 62)';
 
       const ctx = canvas.getContext('2d');
+      
 
       function render() { // erases the screen, updates visual inforamtion
         console.log('render is done');
@@ -82,7 +85,6 @@
         let id;
         let x;
         let y;
-        boardSquare = [];
 
         // draws checkboard
         for (let a = 0; a < 8; a++) {
@@ -104,7 +106,9 @@
 
             ctx.fillRect (25+incrI, 25+incrA, 100, 100);
             // Gives Id's
-            giveId(i, a, incrI, incrA);            
+            if (boardSquare.length < 64) {
+              giveId(i, a, incrI, incrA);
+            }        
             isBlack = !isBlack;
           }
         isBlack = !isBlack;  
@@ -112,16 +116,21 @@
       }
 
       render();
-
 // CALCULATION
 
       // on click sends cursor's location to function 
       canvas.addEventListener('click', (e) => {
-        findSquare(e.offsetX, e.offsetY) // if square isEmpty = false, then find figure on the square
-        figureFind();                   // wait until next mouse input, move figure to other square if is Empty = true
+        const squareId = findSquareId(e.offsetX, e.offsetY);
+      // if square isEmpty = false, then find figure on the square
+        if (isEmpty(squareId) === false) {
+          console.log('The square is NOT empty');
+          figureFind(squareId);
+        } else { console.log('the square is  empty');}
+
+             // wait until next mouse input, move figure to other square if is Empty = true
       })
         //finds clicked square
-      function findSquare(clickX, clickY) {
+      function findSquareId(clickX, clickY) {
         let returnId;
         boardSquare.forEach(element => {
           if (clickX > element.x && clickX < (element.x+100) && clickY > element.y && clickY < (element.y+100)) {
@@ -131,12 +140,27 @@
         });
         return returnId;
       }
-      function figureFind(id) {
-        figure.forEach(element => {
+      function isEmpty(id) {
+        let returnIsEmpty;
+        boardSquare.forEach(element => {
           if (id === element.id) {
-            while (condition) {
-              // continue
-            }
+            returnIsEmpty = element.isEmpty;
+          }
+        });
+        return returnIsEmpty;
+      }
+      function figureFind(idIn) {
+        figure.forEach(element => {
+          if (idIn === element.id) {
+            const once = {
+              once : true
+            };
+            canvas.addEventListener('click', (e) => {
+              const squareId = findSquareId(e.offsetX, e.offsetY);
+              figureAdd(squareId);
+              figureRemove(idIn);
+              return false;
+            }, once)
           }
         });
       }
@@ -148,10 +172,14 @@
           } else {
             return true;
           }
-        })
-        boardSquare.forEach((e,i) => {
-          if (id === e.id) boardSquare[i].isEmpty = true; //not working for some reason =(
         });
+        
+        boardSquare.forEach(e => {
+          if (id === e.id) {
+            e.isEmpty = true;
+          }
+        });
+        
         render();
       }
       
