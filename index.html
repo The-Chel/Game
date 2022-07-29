@@ -39,6 +39,8 @@
       function figureAdd(id) {
         let x;
         let y;
+        let check = true;
+
         boardSquare.forEach(element => {
           if (id === element.id) {
             x = element.x;
@@ -47,11 +49,20 @@
             element.isEmpty = false;
           }
         });
-        figure.push({
-          x: x,
-          y: y,
-          id: id
+        
+        figure.forEach(element => {
+          if (id === element.id) {
+            check = false;
+          } 
         });
+        if (check) {
+            figure.push({
+              x: x,
+              y: y,
+              id: id
+            });
+          }
+        
         render();
       }
 
