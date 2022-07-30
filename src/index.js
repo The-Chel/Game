@@ -6,7 +6,7 @@
 // whitch will get location form boardSquare element by id and pass to figure
 // only changing coordinates
 
-let boardSquare = [];
+let boardSquare = {};
 // {
 //   id, //a1, a2, a3... h8
 //   x,
@@ -22,7 +22,7 @@ function giveId(i, a, incrI, incrA) {
   id = '' + letters[i] + numbers[a];
   x = 25+incrI;
   y = 25+incrA;
-  boardSquare.push({
+  boardSquare[id] = ({
     id,
     x,
     y
@@ -59,28 +59,26 @@ function figureAdd(id) {
   render();
 }
 
-function figurePositionChange(figId, id) {
+function figurePositionChange(toId, fromId) {
   let returnArray = []; //[0] = x. [1] = y.
-  boardSquare.forEach(element => { //draw__
-    if (id === element.id) {
+  //draw__
+  if (fromId) {
+      const element = boardSquare[fromId];
       returnArray[0] = element.x;
       returnArray[1] = element.y;
-
-      element.isEmpty = false;
-    } else if (figId === element.id) {
-      returnArray[0] = element.x;
-      returnArray[1] = element.y;
-
-      element.isEmpty = false;
-    }
-  });
+      element.isEmpty = true;
+  }
+  const element2 = boardSquare[toId];
+  returnArray[0] = element2.x;
+  returnArray[1] = element2.y;
+  element2.isEmpty = false;
   figure.forEach(element => {
-    if (figId === element.id) {
+    if (toId === element.id) {
       element.x = returnArray[0];
       element.y = returnArray[1];
-      if (id !== undefined) {
-        element.id = id;
-      } else element.id = figId;
+      if (fromId !== undefined) {
+        element.id = fromId;
+      } else element.id = toId;
     }
   });
   // return returnArray;
@@ -143,9 +141,7 @@ function createCheckBoard() {
 
       ctx.fillRect (25+incrI, 25+incrA, 100, 100);
       // Gives Id's
-      if (boardSquare.length < 64) {
-        giveId(i, a, incrI, incrA);
-      }
+      giveId(i, a, incrI, incrA);
       isBlack = !isBlack;
     }
   isBlack = !isBlack;
@@ -169,38 +165,30 @@ canvas.addEventListener('click', (e) => {
 //finds clicked square
 function findSquareId(clickX, clickY) {
   let returnId;
-  boardSquare.forEach(element => {
+  Object.entries(boardSquare).forEach(entry => {
+    const element = empty[1];
     if (clickX > element.x && clickX < (element.x+100) && clickY > element.y && clickY < (element.y+100)) {
       returnId = element.id;
       console.log(element.id);
     }
   });
   return returnId;
-  }
+}
 
 function isEmpty(id) {
-  let returnIsEmpty;
-  boardSquare.forEach(element => {
-    if (id === element.id) {
-      returnIsEmpty = element.isEmpty;
-    }
-  });
-  return returnIsEmpty;
+  return boardSquare[id].isEmpty;
 }
 
 function figureMove(idIn) {
   figure.forEach(element => {
     if (idIn === element.id) {
-      const once = {
-        once : true
-      };
       canvas.addEventListener('click', (e) => {
         const squareId = findSquareId(e.offsetX, e.offsetY);
         if (isEmpty(squareId) !== false) {
           figurePositionChange(idIn, squareId);
           figureRemove(idIn);
         }       
-      }, once)
+      }, {once : true})
     }
   });
 }
@@ -214,11 +202,7 @@ function figureRemove(id) {
   //   }
   // });
 
-  boardSquare.forEach(e => {
-    if (id === e.id) {
-      e.isEmpty = true;
-    }
-  });
+  boardSquare[id].isEmpty = true;
 
   render();
 }
