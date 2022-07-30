@@ -4,8 +4,18 @@
     <title>Chess</title>
   </head>
   <body>
-    <button onclick="figureAdd('a1')">Add a1 figure</button>
-    <canvas id="myCanvas" height="850px" width="850px"></canvas>
+    <div>
+      <button onclick="onButtonFigureDraw()" style="display: inline-block;">Add a1 figure</button>
+      <input id="idInput" type="text" placeholder="Unput square Id (a1)" style="display: inline;">
+      <select name="chooseFigure" id="dropDownFigures">
+        <option value="pawn">Choose the figure</option>
+        <option value="pawn">Pawn</option>
+        <option value="king">King</option>
+      </select>
+    </div>
+
+    <canvas id="myCanvas" height="850px" width="850px" style="display: inline; margin: 10px 0;"></canvas>
+
     <div style="width: 850px; display: flex; justify-content: center;">
       <div onclick="render()" style="background-color: lightblue; width: 150px; height: 50px; display: flex; align-items: center; justify-content: center;">Render</div>
       <div  style="background-color: lightgreen; width: 150px; height: 50px; text-align: center; vertical-align: middle;">Bye</div>
