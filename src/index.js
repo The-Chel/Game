@@ -1,20 +1,16 @@
 // MODEL
-// Figure must have Coordiantes on creation, as well as type and id
-// It may be jsut be one function of figureAdd()
-// It'll just initially add the figure to the array of objects
-// Then it must be drawn on coresponding field with another function figureDraw()
-// whitch will get location form boardSquare element by id and pass to figure
-// only changing coordinates
-
 let boardSquare = {};
 let figures = [];
 
 let IdsGiven = 0;
+let isFigurePicked = false;
 
 const letters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
 const numbers = [1, 2, 3, 4, 5, 6, 7, 8];
 const idInput = document.getElementById('idInput');
 const figureType = document.getElementById('dropDownFigures');
+
+
 
 // fills array 'boardSquare' with objects contining ID and location of square
 function giveId(i, a, incrI, incrA) {
@@ -28,14 +24,11 @@ function giveId(i, a, incrI, incrA) {
   });
 }
 
-
-//locationX, locationY, id, type
-function figureAdd(id) {
+function figureAdd(id, color) {
   let check = true;
+  let defaultColor = white;
+  let localColor; 
 
-
-  // x = coords[0];
-  // y = coords[1];
 
   figures.forEach(element => {
     if (id === element.id) {
@@ -46,7 +39,8 @@ function figureAdd(id) {
   if (check) {
       figures.push({
         id: id,
-        type: figureType.value
+        type: figureType.value,
+        color: color
       });
     }
   figurePositionChange(id);
@@ -81,27 +75,7 @@ function figurePositionChange(toId, fromId) {
       }
     });
   }
-
-  // if (fromId) {
-  //     const element = boardSquare[fromId];
-  //     coordinatesArray[0] = element.x;
-  //     coordinatesArray[1] = element.y;
-  //     element.isEmpty = true;
-  // }
-  // const element2 = boardSquare[toId];
-  // coordinatesArray[0] = element2.x;
-  // coordinatesArray[1] = element2.y;
-  // element2.isEmpty = false;
-  // figures.forEach(element => {
-  //   if (toId === element.id) {
-  //     element.x = coordinatesArray[0];
-  //     element.y = coordinatesArray[1];
-  //     if (fromId !== undefined) {
-  //       element.id = fromId;
-  //     } else element.id = toId;
-  //   }
-  // });
-  // return returnArray;
+  render();
 }
 
 // VISUAL
@@ -113,7 +87,6 @@ const ctx = canvas.getContext('2d');
 
 
 function render() { // erases the screen, updates visual inforamtion
-  console.log('render is done');
   ctx.clearRect(0, 0, canvas.width, canvas.height); // deletes evrything
   createCheckBoard(); // draws checkbox
   figureDraw(); // draws figures
@@ -121,17 +94,36 @@ function render() { // erases the screen, updates visual inforamtion
 
 
 function figureDraw() {
-
   figures.forEach(element => {
-    switch (element.type) {
-      case 'king':
-        ctx.fillStyle = 'pink';
-        break;
-    
-      default: ctx.fillStyle = 'cyan';
-        break;
-    }
+  if (element.color === 'WHITE') {
+    ctx.fillStyle = 'white';
     ctx.fillRect(25+element.x, 25+element.y, 50, 50);
+  } else {
+    ctx.fillStyle = 'black';
+    ctx.fillRect(25+element.x, 25+element.y, 50, 50);
+  }
+  switch (element.type) {
+    case 'bishop':
+      ctx.fillStyle = 'blue';
+      break;
+      case 'knight':
+      ctx.fillStyle = 'silver';
+      break;
+      case 'rook':
+      ctx.fillStyle = 'darkgoldenrod';
+      break;
+      case 'queen':
+      ctx.fillStyle = 'gold';
+      break;
+      case 'king':
+      ctx.fillStyle = 'lightcoral';
+      break;
+    
+    default: ctx.fillStyle = 'darkgreen';
+      break;
+  }
+  ctx.fillRect(39+element.x, 39+element.y, 22, 22);
+  
   });
 }
 
@@ -175,16 +167,20 @@ render();
 // CALCULATION
 
 // on click sends cursor's location to function
+
+
 canvas.addEventListener('click', (e) => {
   const squareId = findSquareId(e.offsetX, e.offsetY);
   // if square isEmpty = false, then find figure on the square
-  if (isEmpty(squareId) === false) {
-    console.log('The square is NOT empty');
+  if (isEmpty(squareId) === false && isFigurePicked === false) {
+    console.log('Occupied');
+    isFigurePicked = true;
     figureMove(squareId);
-  } else { console.log('the square is  empty');}
-
+  } else { console.log('Empty');}
      // wait until next mouse input, move figure to other square if is Empty = true
 })
+
+
 //finds clicked square
 function findSquareId(clickX, clickY) {
   let returnId;
@@ -192,7 +188,6 @@ function findSquareId(clickX, clickY) {
     const element = entry[1];
     if (clickX > element.x && clickX < (element.x+100) && clickY > element.y && clickY < (element.y+100)) {
       returnId = element.id;
-      console.log(element.id);
     }
   });
   return returnId;
@@ -203,35 +198,58 @@ function isEmpty(id) {
 }
 
 function figureMove(idIn) {
+  let firstColor;
+  let secondColor;
+
   figures.forEach(element => {
     if (idIn === element.id) {
+      firstColor = element.color;
       canvas.addEventListener('click', (e) => {
         const squareId = findSquareId(e.offsetX, e.offsetY);
-        if (isEmpty(squareId) !== false) {
-          console.log('not false');
+        if (idIn === squareId) {
+          console.log('clicked the same square');
+          return;
+        } else if (isEmpty(squareId) !== false) { // can I just remove !== false??
+          console.log('square was not occupied');
           figurePositionChange(squareId, idIn);
-          figureRemove(idIn);
-        }       
+        } else {
+          console.log('square was occupied');
+
+          figures.forEach(secondElement => {
+            if (squareId === secondElement.id) {
+              secondColor = secondElement.color
+            }
+          });
+          if (firstColor !== secondColor) {
+            console.log('by enemy');
+            figureRemove(squareId);
+            figurePositionChange(squareId, idIn);
+            return;
+          }
+        }
       }, {once : true})
+
     }
   });
+  isFigurePicked = false;
 }
 
 function figureRemove(id) {
-  // figure = figure.filter((e) => {
-  //   if (id === e.id) {
-  //     return false;
-  //   } else {
-  //     return true;
-  //   }
-  // });
-
-  boardSquare[id].isEmpty = true;
-
+  figures = figures.filter((element) => {
+    if (id === element.id) {
+      return false;
+    } else { return true;}
+  });
   render();
 }
 
 function onButtonFigureDraw() {
-  const id = idInput.value;
-  figureAdd(id);
+  let id = 'a1';
+ if (idInput.value) {
+  id = idInput.value;
+ }
+    
+  const color = document.querySelector('input[type="radio"][name="color"]:checked').value
+
+  figureAdd(id, color);
 }

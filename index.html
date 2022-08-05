@@ -10,8 +10,19 @@
       <select name="chooseFigure" id="dropDownFigures">
         <option value="pawn">Choose the figure</option>
         <option value="pawn">Pawn</option>
+        <option value="bishop">Bishop</option>
+        <option value="knight">Knight</option>
+        <option value="rook">Rook</option>
+        <option value="queen">Queen</option>
         <option value="king">King</option>
       </select>
+      <div id="colors">
+        Choose color: 
+        <input type="radio" id="white" name="color" value="WHITE" checked="true">
+        <label for="white">White</label>
+        <input type="radio" id="black" name="color" value="BLACK">
+        <label for="black">Black</label>
+      </div>  
     </div>
 
     <canvas id="myCanvas" height="850px" width="850px" style="display: inline; margin: 10px 0;"></canvas>
