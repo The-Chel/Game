@@ -7,28 +7,26 @@ let isFigurePicked = false;
 
 const letters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
 const numbers = [1, 2, 3, 4, 5, 6, 7, 8];
-const idInput = document.getElementById('idInput');
-const figureType = document.getElementById('dropDownFigures');
+const square = 50; // 50px
+
 
 
 
 // fills array 'boardSquare' with objects contining ID and location of square
-function giveId(i, a, incrI, incrA) {
+function giveId(i, a, incrI, incrA, color) {
   id = '' + letters[i] + numbers[a];
   x = 25+incrI;
   y = 25+incrA;
   boardSquare[id] = ({
     id,
     x,
-    y
+    y,
+    color
   });
 }
 
-function figureAdd(id, color) {
+function figureAdd(id, color, type) {
   let check = true;
-  let defaultColor = white;
-  let localColor; 
-
 
   figures.forEach(element => {
     if (id === element.id) {
@@ -39,7 +37,7 @@ function figureAdd(id, color) {
   if (check) {
       figures.push({
         id: id,
-        type: figureType.value,
+        type: type,
         color: color
       });
     }
@@ -134,6 +132,7 @@ function createCheckBoard() {
   // draws checkboard
   for (let a = 0; a < 8; a++) {
     const incrA = a * 100;
+    let color = '';
 
       ctx.fillStyle = 'black'
       ctx.font = '25px Arial';
@@ -145,15 +144,17 @@ function createCheckBoard() {
 
       if (isBlack) {
         ctx.fillStyle = 'rgb(94, 57, 19)'
+        color = 'brown';
       } else {
         ctx.fillStyle = 'rgb(209, 173, 90)'
+        color = 'light'
       }
 
       ctx.fillRect (25+incrI, 25+incrA, 100, 100);
 
       // Gives Ids only once on first draw, never changes Ids again
       if (IdsGiven < 64) {
-        giveId(i, a, incrI, incrA);
+        giveId(i, a, incrI, incrA, color);
         IdsGiven++;
       }
 
@@ -172,9 +173,10 @@ render();
 canvas.addEventListener('click', (e) => {
   const squareId = findSquareId(e.offsetX, e.offsetY);
   // if square isEmpty = false, then find figure on the square
-  if (isEmpty(squareId) === false && isFigurePicked === false) {
+  if (isEmpty(squareId) === false) {
     console.log('Occupied');
-    isFigurePicked = true;
+
+    highlightMove(squareId);
     figureMove(squareId);
   } else { console.log('Empty');}
      // wait until next mouse input, move figure to other square if is Empty = true
@@ -228,10 +230,73 @@ function figureMove(idIn) {
           }
         }
       }, {once : true})
-
     }
   });
-  isFigurePicked = false;
+}
+
+function highlightMove(id) {
+  let avaliableX;
+  let avaliableY;
+
+  let squareId = '';
+  let squareColor = '';
+
+  // let openMoves = {};
+  // let amountOfMoves = 0;
+  figures.forEach(element => {
+    if (id === element.id) {
+      switch (element.type) {
+        case 'bishop':
+          console.log(element.type);
+          break;
+          case 'knight':
+            console.log(element.type);
+          break;
+          case 'rook':
+            console.log(element.type);
+          break;
+          case 'queen':
+            console.log(element.type);
+          break;
+          case 'king':
+            console.log(element.type);
+          break;
+        
+        default: console.log(element.type);
+        // amountOfMoves = 1;
+        avaliableX = element.x;
+        avaliableY = element.y + 2*square;
+
+        // for (let i = 0; i < amountOfMoves; i++) {
+        //   avaliableY = avaliableY + 2*square; 
+        //   openMoves[i] = ({avaliableX, avaliableY})
+        //   ///////////CONTINUE
+        // }
+          break;
+      }
+      squareId = findSquareId(avaliableX+1, avaliableY+1);
+
+      Object.entries(boardSquare).forEach(entry => {
+        let element2 = entry[1];
+        if (element2.id === squareId) {
+          squareColor = element2.color
+        }
+      });
+
+      if (squareColor === 'brown') {
+        ctx.fillStyle = 'rgb(63, 38, 13)';
+      } else if (squareColor === 'light') {
+        ctx.fillStyle = 'rgb(155, 122, 44)';
+      }
+
+
+     
+      // // 25, 25, 100, 100
+      ctx.fillRect(avaliableX, avaliableY, 100, 100);
+      
+      
+    }
+  })
 }
 
 function figureRemove(id) {
@@ -244,12 +309,25 @@ function figureRemove(id) {
 }
 
 function onButtonFigureDraw() {
+
+  const idInput = document.getElementById('idInput');
+  const figureType = document.getElementById('dropDownFigures').value;
+  const color = document.querySelector('input[type="radio"][name="color"]:checked').value
+
   let id = 'a1';
  if (idInput.value) {
   id = idInput.value;
  }
     
-  const color = document.querySelector('input[type="radio"][name="color"]:checked').value
+  figureAdd(id, color, figureType);
+}
 
-  figureAdd(id, color);
+function figDef() {
+  for (let i = 0; i < 8; i++) {
+    let id_w = letters[i] + '1';
+    let id_b = letters[i] + '3';
+    figureAdd(id_w, 'WHITE');
+    figureAdd(id_b, 'BLACK');
+    
+  }
 }
