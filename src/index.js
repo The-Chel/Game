@@ -127,17 +127,20 @@ function figureDraw() {
 
 function createCheckBoard() {
   let isBlack = true;
-  
+  numbers.reverse();
 
   // draws checkboard
   for (let a = 0; a < 8; a++) {
     const incrA = a * 100;
     let color = '';
+    
 
       ctx.fillStyle = 'black'
       ctx.font = '25px Arial';
       ctx.fillText (letters[a],68+incrA, 20);
-      ctx.fillText (numbers[a],5, 80+incrA);
+      ctx.fillText (letters[a],68+incrA, 844);
+      ctx.fillText (numbers[a], 5, 80+incrA );
+      ctx.fillText (numbers[a], 831, 80+incrA );
 
     for (let i = 0; i < 8; i++) {
       const incrI = i * 100;
