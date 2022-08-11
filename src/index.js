@@ -6,7 +6,7 @@ let IdsGiven = 0;
 let isFigurePicked = false;
 
 const letters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
-const numbers = [1, 2, 3, 4, 5, 6, 7, 8];
+const numbers = [8, 7, 6, 5, 4, 3, 2, 1];
 const square = 50; // 50px
 
 
@@ -127,7 +127,6 @@ function figureDraw() {
 
 function createCheckBoard() {
   let isBlack = true;
-  numbers.reverse();
 
   // draws checkboard
   for (let a = 0; a < 8; a++) {
@@ -146,11 +145,11 @@ function createCheckBoard() {
       const incrI = i * 100;
 
       if (isBlack) {
-        ctx.fillStyle = 'rgb(94, 57, 19)'
-        color = 'brown';
+        ctx.fillStyle = 'rgb(209, 173, 90)';
+        color = 'light';
       } else {
-        ctx.fillStyle = 'rgb(209, 173, 90)'
-        color = 'light'
+        ctx.fillStyle = 'rgb(94, 57, 19)';
+        color = 'brown';
       }
 
       ctx.fillRect (25+incrI, 25+incrA, 100, 100);
@@ -326,11 +325,31 @@ function onButtonFigureDraw() {
 }
 
 function figDef() {
+  // PAWNS
   for (let i = 0; i < 8; i++) {
-    let id_w = letters[i] + '1';
-    let id_b = letters[i] + '3';
+    let id_w = letters[i] + '2';
+    let id_b = letters[i] + '7';
     figureAdd(id_w, 'WHITE');
     figureAdd(id_b, 'BLACK');
-    
   }
+  figureAdd('a1', 'WHITE', 'rook');
+  figureAdd('h1', 'WHITE', 'rook');
+  figureAdd('a8', 'BLACK', 'rook');
+  figureAdd('h8', 'BLACK', 'rook');
+
+  figureAdd('b1', 'WHITE', 'knight');
+  figureAdd('g1', 'WHITE', 'knight');
+  figureAdd('b8', 'BLACK', 'knight');
+  figureAdd('g8', 'BLACK', 'knight');
+
+  figureAdd('c1', 'WHITE', 'bishop');
+  figureAdd('f1', 'WHITE', 'bishop');
+  figureAdd('c8', 'BLACK', 'bishop');
+  figureAdd('f8', 'BLACK', 'bishop');
+
+  figureAdd('d1', 'WHITE', 'queen');
+  figureAdd('e1', 'WHITE', 'king');
+  figureAdd('d8', 'BLACK', 'queen');
+  figureAdd('e8', 'BLACK', 'king');
+  
 }
