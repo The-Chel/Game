@@ -88,41 +88,26 @@ function render() { // erases the screen, updates visual inforamtion
   ctx.clearRect(0, 0, canvas.width, canvas.height); // deletes evrything
   createCheckBoard(); // draws checkbox
   figureDraw(); // draws figures
-  }
+}
 
+const figureUnicodes = {
+  king: { BLACK: '\u265A', WHITE: '\u2654' },
+  queen: { BLACK: '\u265B', WHITE: '\u2655' },
+  rook: { BLACK: '\u265C', WHITE: '\u2656' },
+  bishop: { BLACK: '\u265D', WHITE: '\u2657' },
+  knight: { BLACK: '\u265E', WHITE: '\u2658' },
+  pawn: { BLACK: '\u265F', WHITE: '\u2659' }
+}
 
 function figureDraw() {
+  ctx.save();
   figures.forEach(element => {
-  if (element.color === 'WHITE') {
-    ctx.fillStyle = 'white';
-    ctx.fillRect(25+element.x, 25+element.y, 50, 50);
-  } else {
-    ctx.fillStyle = 'black';
-    ctx.fillRect(25+element.x, 25+element.y, 50, 50);
-  }
-  switch (element.type) {
-    case 'bishop':
-      ctx.fillStyle = 'blue';
-      break;
-      case 'knight':
-      ctx.fillStyle = 'silver';
-      break;
-      case 'rook':
-      ctx.fillStyle = 'darkgoldenrod';
-      break;
-      case 'queen':
-      ctx.fillStyle = 'gold';
-      break;
-      case 'king':
-      ctx.fillStyle = 'lightcoral';
-      break;
-    
-    default: ctx.fillStyle = 'darkgreen';
-      break;
-  }
-  ctx.fillRect(39+element.x, 39+element.y, 22, 22);
-  
+  ctx.fillStyle = "black";
+  ctx.font = '100px serif';
+  ctx.textAlign = 'center';
+  ctx.fillText(figureUnicodes[element.type][element.color], 50+element.x, 85+element.y);
   });
+  ctx.restore();
 }
 
 function createCheckBoard() {
