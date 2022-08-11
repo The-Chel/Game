@@ -76,6 +76,15 @@ function figurePositionChange(toId, fromId) {
   render();
 }
 
+function figureRemove(id) {
+  figures = figures.filter((element) => {
+    if (id === element.id) {
+      return false;
+    } else { return true;}
+  });
+  render();
+}
+
 // VISUAL
 
 const canvas = document.getElementById('myCanvas');
@@ -88,58 +97,41 @@ function render() { // erases the screen, updates visual inforamtion
   ctx.clearRect(0, 0, canvas.width, canvas.height); // deletes evrything
   createCheckBoard(); // draws checkbox
   figureDraw(); // draws figures
-  }
+}
 
+const figureUnicodes = {
+  king: { black: '\u265A', white: '\u2654' },
+  queen: { black: '\u265B', white: '\u2655' },
+  rook: { black: '\u265C', white: '\u2656' },
+  bishop: { black: '\u265D', white: '\u2657' },
+  knight: { black: '\u265E', white: '\u2658' },
+  pawn: { black: '\u265F', white: '\u2659' }
+}
 
 function figureDraw() {
+  ctx.save();
   figures.forEach(element => {
-  if (element.color === 'WHITE') {
-    ctx.fillStyle = 'white';
-    ctx.fillRect(25+element.x, 25+element.y, 50, 50);
-  } else {
-    ctx.fillStyle = 'black';
-    ctx.fillRect(25+element.x, 25+element.y, 50, 50);
-  }
-  switch (element.type) {
-    case 'bishop':
-      ctx.fillStyle = 'blue';
-      break;
-      case 'knight':
-      ctx.fillStyle = 'silver';
-      break;
-      case 'rook':
-      ctx.fillStyle = 'darkgoldenrod';
-      break;
-      case 'queen':
-      ctx.fillStyle = 'gold';
-      break;
-      case 'king':
-      ctx.fillStyle = 'lightcoral';
-      break;
-    
-    default: ctx.fillStyle = 'darkgreen';
-      break;
-  }
-  ctx.fillRect(39+element.x, 39+element.y, 22, 22);
-  
+  ctx.fillStyle = "black";
+  ctx.font = '100px serif';
+  ctx.textAlign = 'center';
+  ctx.fillText(figureUnicodes[element.type][element.color], 50+element.x, 85+element.y);
   });
+  ctx.restore();
 }
 
 function createCheckBoard() {
   let isBlack = true;
 
-  // draws checkboard
   for (let a = 0; a < 8; a++) {
     const incrA = a * 100;
     let color = '';
     
-
-      ctx.fillStyle = 'black'
-      ctx.font = '25px Arial';
-      ctx.fillText (letters[a],68+incrA, 20);
-      ctx.fillText (letters[a],68+incrA, 844);
-      ctx.fillText (numbers[a], 5, 80+incrA );
-      ctx.fillText (numbers[a], 831, 80+incrA );
+    ctx.fillStyle = 'black'
+    ctx.font = '25px Arial';
+    ctx.fillText (letters[a],68+incrA, 20);
+    ctx.fillText (letters[a],68+incrA, 844);
+    ctx.fillText (numbers[a], 5, 80+incrA );
+    ctx.fillText (numbers[a], 831, 80+incrA );
 
     for (let i = 0; i < 8; i++) {
       const incrI = i * 100;
@@ -166,11 +158,111 @@ function createCheckBoard() {
   }
 }
 
-render();
+function highlightMove(id) {
+  let avaliableX;
+  let avaliableY;
+  let figureColor = 1;
+
+  let squareId = '';
+  let squareColor = '';
+
+  // let openMoves = {};
+  // let amountOfMoves = 0;
+  figures.forEach(element => {
+    if (id === element.id) {
+      if (element.color === 'white') {
+        figureColor = -1;
+      }
+      switch (element.type) {
+        case 'bishop':
+          console.log(element.type);
+          break;
+          case 'knight':
+            console.log(element.type);
+          break;
+          case 'rook':
+            console.log(element.type);
+          break;
+          case 'queen':
+            console.log(element.type);
+          break;
+          case 'king':
+            console.log(element.type);
+          break;
+        
+        default: console.log(element.type);
+        // amountOfMoves = 1;
+        avaliableX = element.x;
+        avaliableY = element.y + 2*square*figureColor;
+
+        // for (let i = 0; i < amountOfMoves; i++) {
+        //   avaliableY = avaliableY + 2*square; 
+        //   openMoves[i] = ({avaliableX, avaliableY})
+        //   ///////////CONTINUE
+        // }
+          break;
+      }
+
+      squareId = findSquareId(avaliableX+1, avaliableY+1);
+      squareColor = boardSquare[squareId].color;
+
+      if (squareColor === 'brown') {
+        ctx.fillStyle = 'rgb(63, 38, 13)';
+      } else if (squareColor === 'light') {
+        ctx.fillStyle = 'rgb(155, 122, 44)';
+      }
+      //25, 25, 100, 100
+      ctx.fillRect(avaliableX, avaliableY, 100, 100);
+    }
+  })
+}
+
+function onButtonFigureDraw() {
+
+  const idInput = document.getElementById('idInput');
+  const figureType = document.getElementById('dropDownFigures').value;
+  const color = document.querySelector('input[type="radio"][name="color"]:checked').value
+
+  let id = 'a1';
+ if (idInput.value) {
+  id = idInput.value;
+ }
+    
+  figureAdd(id, color, figureType);
+}
+
+function figDef() {
+  figures = [];
+  // PAWNS
+  for (let i = 0; i < 8; i++) {
+    let id_w = letters[i] + '2';
+    let id_b = letters[i] + '7';
+    figureAdd(id_w, 'white', 'pawn');
+    figureAdd(id_b, 'black', 'pawn');
+  }
+  figureAdd('a1', 'white', 'rook');
+  figureAdd('h1', 'white', 'rook');
+  figureAdd('a8', 'black', 'rook');
+  figureAdd('h8', 'black', 'rook');
+
+  figureAdd('b1', 'white', 'knight');
+  figureAdd('g1', 'white', 'knight');
+  figureAdd('b8', 'black', 'knight');
+  figureAdd('g8', 'black', 'knight');
+
+  figureAdd('c1', 'white', 'bishop');
+  figureAdd('f1', 'white', 'bishop');
+  figureAdd('c8', 'black', 'bishop');
+  figureAdd('f8', 'black', 'bishop');
+
+  figureAdd('d1', 'white', 'queen');
+  figureAdd('e1', 'white', 'king');
+  figureAdd('d8', 'black', 'queen');
+  figureAdd('e8', 'black', 'king');
+  
+}
+
 // CALCULATION
-
-// on click sends cursor's location to function
-
 
 canvas.addEventListener('click', (e) => {
   const squareId = findSquareId(e.offsetX, e.offsetY);
@@ -183,7 +275,6 @@ canvas.addEventListener('click', (e) => {
   } else { console.log('Empty');}
      // wait until next mouse input, move figure to other square if is Empty = true
 })
-
 
 //finds clicked square
 function findSquareId(clickX, clickY) {
@@ -236,121 +327,4 @@ function figureMove(idIn) {
   });
 }
 
-function highlightMove(id) {
-  let avaliableX;
-  let avaliableY;
-
-  let squareId = '';
-  let squareColor = '';
-
-  // let openMoves = {};
-  // let amountOfMoves = 0;
-  figures.forEach(element => {
-    if (id === element.id) {
-      switch (element.type) {
-        case 'bishop':
-          console.log(element.type);
-          break;
-          case 'knight':
-            console.log(element.type);
-          break;
-          case 'rook':
-            console.log(element.type);
-          break;
-          case 'queen':
-            console.log(element.type);
-          break;
-          case 'king':
-            console.log(element.type);
-          break;
-        
-        default: console.log(element.type);
-        // amountOfMoves = 1;
-        avaliableX = element.x;
-        avaliableY = element.y + 2*square;
-
-        // for (let i = 0; i < amountOfMoves; i++) {
-        //   avaliableY = avaliableY + 2*square; 
-        //   openMoves[i] = ({avaliableX, avaliableY})
-        //   ///////////CONTINUE
-        // }
-          break;
-      }
-      squareId = findSquareId(avaliableX+1, avaliableY+1);
-
-      Object.entries(boardSquare).forEach(entry => {
-        let element2 = entry[1];
-        if (element2.id === squareId) {
-          squareColor = element2.color
-        }
-      });
-
-      if (squareColor === 'brown') {
-        ctx.fillStyle = 'rgb(63, 38, 13)';
-      } else if (squareColor === 'light') {
-        ctx.fillStyle = 'rgb(155, 122, 44)';
-      }
-
-
-     
-      // // 25, 25, 100, 100
-      ctx.fillRect(avaliableX, avaliableY, 100, 100);
-      
-      
-    }
-  })
-}
-
-function figureRemove(id) {
-  figures = figures.filter((element) => {
-    if (id === element.id) {
-      return false;
-    } else { return true;}
-  });
-  render();
-}
-
-function onButtonFigureDraw() {
-
-  const idInput = document.getElementById('idInput');
-  const figureType = document.getElementById('dropDownFigures').value;
-  const color = document.querySelector('input[type="radio"][name="color"]:checked').value
-
-  let id = 'a1';
- if (idInput.value) {
-  id = idInput.value;
- }
-    
-  figureAdd(id, color, figureType);
-}
-
-function figDef() {
-  figures = [];
-  // PAWNS
-  for (let i = 0; i < 8; i++) {
-    let id_w = letters[i] + '2';
-    let id_b = letters[i] + '7';
-    figureAdd(id_w, 'WHITE');
-    figureAdd(id_b, 'BLACK');
-  }
-  figureAdd('a1', 'WHITE', 'rook');
-  figureAdd('h1', 'WHITE', 'rook');
-  figureAdd('a8', 'BLACK', 'rook');
-  figureAdd('h8', 'BLACK', 'rook');
-
-  figureAdd('b1', 'WHITE', 'knight');
-  figureAdd('g1', 'WHITE', 'knight');
-  figureAdd('b8', 'BLACK', 'knight');
-  figureAdd('g8', 'BLACK', 'knight');
-
-  figureAdd('c1', 'WHITE', 'bishop');
-  figureAdd('f1', 'WHITE', 'bishop');
-  figureAdd('c8', 'BLACK', 'bishop');
-  figureAdd('f8', 'BLACK', 'bishop');
-
-  figureAdd('d1', 'WHITE', 'queen');
-  figureAdd('e1', 'WHITE', 'king');
-  figureAdd('d8', 'BLACK', 'queen');
-  figureAdd('e8', 'BLACK', 'king');
-  
-}
+render();
