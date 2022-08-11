@@ -270,7 +270,7 @@ canvas.addEventListener('click', (e) => {
   if (isEmpty(squareId) === false) {
     console.log('Occupied');
 
-    highlightMove(squareId);
+    // highlightMove(squareId);
     figureMove(squareId);
   } else { console.log('Empty');}
      // wait until next mouse input, move figure to other square if is Empty = true
