@@ -325,6 +325,7 @@ function onButtonFigureDraw() {
 }
 
 function figDef() {
+  figures = [];
   // PAWNS
   for (let i = 0; i < 8; i++) {
     let id_w = letters[i] + '2';
