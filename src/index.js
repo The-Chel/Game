@@ -7,7 +7,7 @@ let isFigurePicked = false;
 
 const letters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
 const numbers = [8, 7, 6, 5, 4, 3, 2, 1];
-const square = 100; // 100px
+
 
 
 
@@ -17,13 +17,15 @@ function giveId(i, a, incrI, incrA, color) {
   id = '' + letters[i] + numbers[a];
   x = 25+incrI;
   y = 25+incrA;
-  boardSquare[id] = ({
+  boardSquare[id] = ({ //canMove = false;
     id,
     x,
     y,
     color
   });
 }
+// for (let canMove in boardSquare) {}
+// delete boardSquare.canMove;
 
 function figureAdd(id, color, type) {
   let check = true;
@@ -47,41 +49,39 @@ function figureAdd(id, color, type) {
 
 function figurePositionChange(toId, fromId) {
   let coordinatesArray = []; //[0] = x. [1] = y.
+  const figureTo = figureFind(toId);
+  const figureFrom = figureFind(fromId);
 
   if (toId && fromId) { // goes here on figure's move
     const fromSquare = boardSquare[fromId];
     const toSquare = boardSquare[toId];
+    
+    figureFrom.x = toSquare.x;
+    figureFrom.y = toSquare.y;
+    figureFrom.id = toSquare.id;
+    toSquare.isEmpty = false;
+    fromSquare.isEmpty = true;
 
-    figures.forEach(element => {
-      if (fromId === element.id) {
-        element.x = toSquare.x;
-        element.y = toSquare.y;
-        element.id = toSquare.id;
-        toSquare.isEmpty = false;
-        fromSquare.isEmpty = true;
-      }
-    });
+    addHistory(fromId, toId, figureFrom.color, figureFrom.type);
+    
   } else if (toId) { // goes here only on figure's creation
-    const element2 = boardSquare[toId];
-    coordinatesArray[0] = element2.x;
-    coordinatesArray[1] = element2.y;
-    element2.isEmpty = false;
-    figures.forEach(element => {
-      if (toId === element.id) {
-        element.x = coordinatesArray[0];
-        element.y = coordinatesArray[1];
-      }
-    });
+    boardSquare[toId].isEmpty = false;
+    figureTo.x = boardSquare[toId].x;
+    figureTo.y = boardSquare[toId].y;
   }
   render();
+  
 }
 
-function figureRemove(id) {
+function figureRemove(id, all) {
   figures = figures.filter((element) => {
     if (id === element.id) {
       return false;
     } else { return true;}
   });
+  if (all) {
+    figures = [];
+  }
   render();
 }
 
@@ -96,13 +96,7 @@ canvas.style.backgroundColor = 'rgb(148, 106, 62)';
 
 const ctx = canvas.getContext('2d');
 
-
-function render() { // erases the screen, updates visual inforamtion
-  ctx.clearRect(0, 0, canvas.width, canvas.height); // deletes evrything
-  createCheckBoard(); // draws checkbox
-  figureDraw(); // draws figures
-}
-
+const square = 100; // 100px
 const figureUnicodes = {
   king: { black: '\u265A', white: '\u2654' },
   queen: { black: '\u265B', white: '\u2655' },
@@ -110,6 +104,13 @@ const figureUnicodes = {
   bishop: { black: '\u265D', white: '\u2657' },
   knight: { black: '\u265E', white: '\u2658' },
   pawn: { black: '\u265F', white: '\u2659' }
+}
+
+function render() { // erases the screen, updates visual inforamtion
+  ctx.clearRect(0, 0, canvas.width, canvas.height); // deletes evrything
+  createCheckBoard(); // draws checkbox
+  figureDraw(); // draws figures
+
 }
 
 function figureDraw() {
@@ -158,87 +159,13 @@ function createCheckBoard() {
 
       isBlack = !isBlack;
     }
-  isBlack = !isBlack;
+    isBlack = !isBlack;
   }
-}
 
-function highlightMove(id) {
-  figures.forEach(element => {
-    if (id === element.id) {
-      
-      let topId = findSquareId((element.x+1), (element.y-square+1));
-      let rightId = findSquareId((element.x+square+1), (element.y+1));
-      let bottomId = findSquareId((element.x+1), (element.y+square+1));
-      let leftId = findSquareId((element.x-square+1), (element.y+1));
-
-      let topRightId = findSquareId((element.x+square+1), (element.y-square+1));
-      let bottomRightId = findSquareId((element.x+square+1), (element.y+square+1));
-      let bottomLeftId = findSquareId((element.x-square+1), (element.y+square+1));
-      let topLeftId = findSquareId((element.x-square+1), (element.y-square+1));
-      
-      let oneMove = false;
-     
-      switch (element.type) {
-        case 'bishop':
-          console.log(element.type);
-
-          movesDraw(topRightId, 'top-right');
-          movesDraw(bottomRightId, 'bottom-right');
-          movesDraw(bottomLeftId, 'bottom-left');
-          movesDraw(topLeftId, 'top-left');
-          break;
-          case 'knight':
-            console.log(element.type);
-          break;
-          case 'rook':
-            console.log(element.type);
-
-            movesDraw(topId, 'top');
-            movesDraw(rightId, 'right');
-            movesDraw(bottomId, 'bottom');
-            movesDraw(leftId, 'left');            
-          break;
-          case 'queen':
-            console.log(element.type);
-
-            movesDraw(topId, 'top');
-            movesDraw(rightId, 'right');
-            movesDraw(bottomId, 'bottom');
-            movesDraw(leftId, 'left');  
-
-            movesDraw(topRightId, 'top-right');
-            movesDraw(bottomRightId, 'bottom-right');
-            movesDraw(bottomLeftId, 'bottom-left');
-            movesDraw(topLeftId, 'top-left');
-
-          break;
-          case 'king':
-            console.log(element.type);
-            oneMove = true;
-
-            movesDraw(topId, 'top', oneMove);
-            movesDraw(rightId, 'right', oneMove);
-            movesDraw(bottomId, 'bottom', oneMove);
-            movesDraw(leftId, 'left', oneMove);  
-
-            movesDraw(topRightId, 'top-right', oneMove);
-            movesDraw(bottomRightId, 'bottom-right', oneMove);
-            movesDraw(bottomLeftId, 'bottom-left', oneMove);
-            movesDraw(topLeftId, 'top-left', oneMove);
-          break;
-        
-        default: 
-          console.log(element.type);
-          oneMove = true;
-          if (element.color === 'white') {
-            movesDraw(topId, 'top', oneMove);
-          } else movesDraw(bottomId, 'bottom', oneMove);
-          break;
-      }
-
-    }
+  Object.entries(boardSquare).forEach(entry => {
+    delete entry[1].canMove;
+    if (entry[1].isEmpty) delete entry[1].isEmpty;
   })
-  
 }
 
 function movesDraw(id, direction, oneMove) {
@@ -256,7 +183,9 @@ function movesDraw(id, direction, oneMove) {
         console.log('Figure on', direction);
         return;
       }
-                
+
+      boardSquare[localId].canMove = true;
+
       let squareColor = boardSquare[localId].color;
       if (squareColor === 'brown') {
         ctx.fillStyle = 'rgb(63, 38, 13)';
@@ -264,6 +193,7 @@ function movesDraw(id, direction, oneMove) {
         ctx.fillStyle = 'rgb(155, 122, 44)';
       }
       ctx.fillRect(boardSquare[localId].x, boardSquare[localId].y, 100, 100);
+
       switch (direction) {
         case 'top':
           localId = findSquareId((boardSquare[localId].x+1), (boardSquare[localId].y-square+1));
@@ -302,7 +232,6 @@ function movesDraw(id, direction, oneMove) {
   } catch (error) {
     console.log('End of board at', direction);
   }
-  figureDraw()
 }
 
 function onButtonFigureDraw() {
@@ -311,7 +240,7 @@ function onButtonFigureDraw() {
   const figureType = document.getElementById('dropDownFigures').value;
   const color = document.querySelector('input[type="radio"][name="color"]:checked').value
 
-  let id = 'a1';
+  let id = 'a8';
  if (idInput.value) {
   id = idInput.value;
  }
@@ -347,7 +276,15 @@ function figDef() {
   figureAdd('e1', 'white', 'king');
   figureAdd('d8', 'black', 'queen');
   figureAdd('e8', 'black', 'king');
-  
+}
+
+function addHistory(fromId, toId, color, type) {
+  const HistoryHolder = document.getElementById('historyHolder');
+  const historyMove = document.createElement('div');
+  const colorTo = color.charAt(0).toUpperCase()+color.slice(1);
+  historyMove.innerText = colorTo + ' ' + type + ' moved from "' + fromId + '" to "' + toId +'"'
+  historyMove.id = 'history'
+  HistoryHolder.appendChild(historyMove);
 }
 
 
@@ -359,9 +296,10 @@ function figDef() {
 canvas.addEventListener('click', (e) => {
   const squareId = findSquareId(e.offsetX, e.offsetY);
   // if square isEmpty = false, then find figure on the square
-  if (isEmpty(squareId) === false) {
+  if (isEmpty(squareId) === false && isFigurePicked === false) {
     console.log('Occupied');
 
+    isFigurePicked = true;
     highlightMove(squareId);
     figureMove(squareId);
   } else { console.log('Empty');}
@@ -381,43 +319,136 @@ function findSquareId(x, y) {
 }
 
 function isEmpty(id) {
-  return boardSquare[id].isEmpty;
+  try {
+    return boardSquare[id].isEmpty;
+  } catch (error) {
+    console.log('not a square');
+  }
 }
 
 function figureMove(idIn) {
   let firstColor;
   let secondColor;
+  let element = figureFind(idIn);
+  let secondElement;
 
+  firstColor = element.color;
+  canvas.addEventListener('click', (e) => {
+    const squareId = findSquareId(e.offsetX, e.offsetY);
+    secondElement = figureFind(squareId);
+
+    if (idIn === squareId) { // same square
+      console.log('clicked the same square');
+    } else if (isEmpty(squareId) !== false && boardSquare[squareId].canMove) { // free square
+      console.log('square was not occupied');
+      figurePositionChange(squareId, idIn);
+    } else {
+      console.log('square was occupied'); // occupied square
+
+      secondColor = secondElement.color
+
+      if (firstColor !== secondColor && boardSquare[squareId].canMove) {
+        console.log('by enemy');
+        figureRemove(squareId);
+        figurePositionChange(squareId, idIn);
+      } else {console.log('by ally');}
+    }
+    isFigurePicked = false;
+    render();
+  }, {once : true})
+}
+
+function highlightMove(id) {
+  //  first half of render() to redraw board with no figures
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  createCheckBoard();
+  let element = figureFind(id);
+ 
+  let topId = findSquareId((element.x+1), (element.y-square+1));
+  let rightId = findSquareId((element.x+square+1), (element.y+1));
+  let bottomId = findSquareId((element.x+1), (element.y+square+1));
+  let leftId = findSquareId((element.x-square+1), (element.y+1));
+
+  let topRightId = findSquareId((element.x+square+1), (element.y-square+1));
+  let bottomRightId = findSquareId((element.x+square+1), (element.y+square+1));
+  let bottomLeftId = findSquareId((element.x-square+1), (element.y+square+1));
+  let topLeftId = findSquareId((element.x-square+1), (element.y-square+1));
+  
+  let oneMove = false;
+  
+  switch (element.type) {
+    case 'bishop':
+      console.log(element.type);
+
+      movesDraw(topRightId, 'top-right');
+      movesDraw(bottomRightId, 'bottom-right');
+      movesDraw(bottomLeftId, 'bottom-left');
+      movesDraw(topLeftId, 'top-left');
+      break;
+      case 'knight':
+        console.log(element.type);
+      break;
+      case 'rook':
+        console.log(element.type);
+
+        movesDraw(topId, 'top');
+        movesDraw(rightId, 'right');
+        movesDraw(bottomId, 'bottom');
+        movesDraw(leftId, 'left');            
+      break;
+      case 'queen':
+        console.log(element.type);
+
+        movesDraw(topId, 'top');
+        movesDraw(rightId, 'right');
+        movesDraw(bottomId, 'bottom');
+        movesDraw(leftId, 'left');  
+
+        movesDraw(topRightId, 'top-right');
+        movesDraw(bottomRightId, 'bottom-right');
+        movesDraw(bottomLeftId, 'bottom-left');
+        movesDraw(topLeftId, 'top-left');
+
+      break;
+      case 'king':
+        console.log(element.type);
+        oneMove = true;
+
+        movesDraw(topId, 'top', oneMove);
+        movesDraw(rightId, 'right', oneMove);
+        movesDraw(bottomId, 'bottom', oneMove);
+        movesDraw(leftId, 'left', oneMove);  
+
+        movesDraw(topRightId, 'top-right', oneMove);
+        movesDraw(bottomRightId, 'bottom-right', oneMove);
+        movesDraw(bottomLeftId, 'bottom-left', oneMove);
+        movesDraw(topLeftId, 'top-left', oneMove);
+      break;
+    
+    default: 
+      console.log(element.type);
+      oneMove = true;
+      if (element.color === 'white') {
+        movesDraw(topId, 'top', oneMove);
+      } else movesDraw(bottomId, 'bottom', oneMove);
+      break;
+  }
+
+
+  // second pard of render() for figures only
+  figureDraw();
+}
+
+function figureFind(id) {
+  let returnElement;
   figures.forEach(element => {
-    if (idIn === element.id) {
-      firstColor = element.color;
-      canvas.addEventListener('click', (e) => {
-        const squareId = findSquareId(e.offsetX, e.offsetY);
-        if (idIn === squareId) {
-          console.log('clicked the same square');
-          return;
-        } else if (isEmpty(squareId) !== false) { // can I just remove !== false??
-          console.log('square was not occupied');
-          figurePositionChange(squareId, idIn);
-        } else {
-          console.log('square was occupied');
-
-          figures.forEach(secondElement => {
-            if (squareId === secondElement.id) {
-              secondColor = secondElement.color
-            }
-          });
-          if (firstColor !== secondColor) {
-            console.log('by enemy');
-            figureRemove(squareId);
-            figurePositionChange(squareId, idIn);
-            return;
-          }
-        }
-      }, {once : true})
+    if (id === element.id) {
+      returnElement = element;
     }
   });
+  return returnElement;
 }
 
 render();
-alert("There are a couple of bugs I haven't fixed yet. No move highlight for Knights. Figures are drawn with every click on any figure. Sometimes figures are not drawn over the new square");
+figDef();
+// alert("There are a couple of bugs I haven't fixed yet. No move highlight for Knights. Figures are drawn with every click on any figure. Sometimes figures are not drawn over the new square");
