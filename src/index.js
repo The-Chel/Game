@@ -346,6 +346,7 @@ function figureMove(idIn) {
     } else {
       console.log('square was occupied'); // occupied square
 
+
       try {
         secondColor = secondElement.color
       } catch (error) {
@@ -453,6 +454,7 @@ function highlightMove(id) {
       }
       break;
   }
+
 
 
   // second pard of render() for figures only
