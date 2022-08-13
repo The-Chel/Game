@@ -449,7 +449,7 @@ function highlightMove(id) {
 
       let rightSquare = findSquareId((boardSquare[id].x+square+1), (boardSquare[id].y+square*color+1));
       let leftSquare = findSquareId((boardSquare[id].x-square+1), (boardSquare[id].y+square*color+1));
-      if (condition) {
+      if (false) {
         
       }
       break;
