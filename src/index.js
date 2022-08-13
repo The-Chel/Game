@@ -27,7 +27,7 @@ function giveId(i, a, incrI, incrA, color) {
 // for (let canMove in boardSquare) {}
 // delete boardSquare.canMove;
 
-function figureAdd(id, color, type) {
+function figureAdd(id, color, type, firstTurn) {
   let check = true;
 
   figures.forEach(element => {
@@ -40,7 +40,8 @@ function figureAdd(id, color, type) {
       figures.push({
         id: id,
         type: type,
-        color: color
+        color: color,
+        firstTurn: firstTurn
       });
     }
   figurePositionChange(id);
@@ -168,11 +169,11 @@ function createCheckBoard() {
   })
 }
 
-function movesDraw(id, direction, oneMove) {
+function movesDraw(id, direction, amountOfMoves) {
   let localId = id;
   index = 0;
-  if (oneMove) {
-    index = 7;
+  if (amountOfMoves) {
+    index = 8-amountOfMoves;
   }
   try {
     while (index<8) {
@@ -254,8 +255,8 @@ function figDef() {
   for (let i = 0; i < 8; i++) {
     let id_w = letters[i] + '2';
     let id_b = letters[i] + '7';
-    figureAdd(id_w, 'white', 'pawn');
-    figureAdd(id_b, 'black', 'pawn');
+    figureAdd(id_w, 'white', 'pawn', true);
+    figureAdd(id_b, 'black', 'pawn', true);
   }
   figureAdd('a1', 'white', 'rook');
   figureAdd('h1', 'white', 'rook');
@@ -345,7 +346,13 @@ function figureMove(idIn) {
     } else {
       console.log('square was occupied'); // occupied square
 
-      secondColor = secondElement.color
+
+      try {
+        secondColor = secondElement.color
+      } catch (error) {
+        
+      }
+      
 
       if (firstColor !== secondColor && boardSquare[squareId].canMove) {
         console.log('by enemy');
@@ -412,27 +419,42 @@ function highlightMove(id) {
       break;
       case 'king':
         console.log(element.type);
-        oneMove = true;
 
-        movesDraw(topId, 'top', oneMove);
-        movesDraw(rightId, 'right', oneMove);
-        movesDraw(bottomId, 'bottom', oneMove);
-        movesDraw(leftId, 'left', oneMove);  
+        movesDraw(topId, 'top', 1);
+        movesDraw(rightId, 'right', 1);
+        movesDraw(bottomId, 'bottom', 1);
+        movesDraw(leftId, 'left', 1);  
 
-        movesDraw(topRightId, 'top-right', oneMove);
-        movesDraw(bottomRightId, 'bottom-right', oneMove);
-        movesDraw(bottomLeftId, 'bottom-left', oneMove);
-        movesDraw(topLeftId, 'top-left', oneMove);
+        movesDraw(topRightId, 'top-right', 1);
+        movesDraw(bottomRightId, 'bottom-right', 1);
+        movesDraw(bottomLeftId, 'bottom-left', 1);
+        movesDraw(topLeftId, 'top-left', 1);
       break;
     
-    default: 
+    default:
       console.log(element.type);
-      oneMove = true;
+      let moves = 1;
+      let color;
+      if ((element.id[1] == 2 && element.color === 'white') || (element.id[1] == 7 && element.color === 'black')) {
+        moves = 2;
+      } 
+
       if (element.color === 'white') {
-        movesDraw(topId, 'top', oneMove);
-      } else movesDraw(bottomId, 'bottom', oneMove);
+        movesDraw(topId, 'top', moves);
+        color = -1
+      } else {
+        movesDraw(bottomId, 'bottom', moves);
+        color = 1;
+    }
+
+      let rightSquare = findSquareId((boardSquare[id].x+square+1), (boardSquare[id].y+square*color+1));
+      let leftSquare = findSquareId((boardSquare[id].x-square+1), (boardSquare[id].y+square*color+1));
+      if (condition) {
+        
+      }
       break;
   }
+
 
 
   // second pard of render() for figures only
