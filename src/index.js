@@ -1,3 +1,4 @@
+const canva = window.canvas;
 // MODEL
 const boardSquare = {};
 let figures = [];
@@ -83,37 +84,18 @@ function figureRemove (id, all) {
 }
 
 // VISUAL
-
 const canvas = document.getElementById('myCanvas');
 canvas.style.backgroundColor = 'rgb(148, 106, 62)';
 
 const ctx = canvas.getContext('2d');
 
 const square = 100; // 100px
-const figureUnicodes = {
-  king: { black: '\u265A', white: '\u2654' },
-  queen: { black: '\u265B', white: '\u2655' },
-  rook: { black: '\u265C', white: '\u2656' },
-  bishop: { black: '\u265D', white: '\u2657' },
-  knight: { black: '\u265E', white: '\u2658' },
-  pawn: { black: '\u265F', white: '\u2659' }
-};
 
 function render () { // erases the screen, updates visual inforamtion
-  ctx.clearRect(0, 0, canvas.width, canvas.height); // deletes evrything
-  createCheckBoard(); // draws checkbox
-  figureDraw(); // draws figures
-}
-
-function figureDraw () {
-  ctx.save();
-  figures.forEach(element => {
-    ctx.fillStyle = 'black';
-    ctx.font = '100px serif';
-    ctx.textAlign = 'center';
-    ctx.fillText(figureUnicodes[element.type][element.color], 50 + element.x, 85 + element.y);
-  });
-  ctx.restore();
+  canva.clear();
+  createCheckBoard();
+  canva.createCheckBoard(); // draws checkbox
+  canva.figuresDraw(figures); // draws figures
 }
 
 function createCheckBoard () {
@@ -122,26 +104,14 @@ function createCheckBoard () {
   for (let a = 0; a < 8; a++) {
     const incrA = a * 100;
     let color = '';
-
-    ctx.fillStyle = 'black';
-    ctx.font = '25px Arial';
-    ctx.fillText(letters[a], 68 + incrA, 20);
-    ctx.fillText(letters[a], 68 + incrA, 844);
-    ctx.fillText(numbers[a], 5, 80 + incrA);
-    ctx.fillText(numbers[a], 831, 80 + incrA);
-
     for (let i = 0; i < 8; i++) {
       const incrI = i * 100;
 
       if (isBlack) {
-        ctx.fillStyle = 'rgb(209, 173, 90)';
         color = 'light';
       } else {
-        ctx.fillStyle = 'rgb(94, 57, 19)';
         color = 'brown';
       }
-
-      ctx.fillRect(25 + incrI, 25 + incrA, 100, 100);
 
       // Gives Ids only once on first draw, never changes Ids again
       if (IdsGiven < 64) {
@@ -364,7 +334,7 @@ function figureMove (idIn) {
 function highlightMove (id) {
   //  first half of render() to redraw board with no figures
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  createCheckBoard();
+  canva.createCheckBoard();
 
   let moves = 1;
   let color;
@@ -494,7 +464,7 @@ function highlightMove (id) {
   }
 
   // second pard of render() for figures only
-  figureDraw();
+  canva.figuresDraw(figures);
 }
 
 function getFigureById (id) {
