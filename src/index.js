@@ -390,7 +390,7 @@ function highlightMove (id) {
   const element = getFigureById(id);
   const elementColor = element.color;
   if (elementColor !== turn) {
-    figureDraw();
+    canva.figuresDraw(figures);
     return;
   }
 
