@@ -8,6 +8,8 @@ let isFigurePicked = false;
 const historyArray = [];
 let historyCount = 1;
 
+let turn = 'white'; // white or black
+
 const letters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
 const numbers = [8, 7, 6, 5, 4, 3, 2, 1];
 
@@ -26,7 +28,7 @@ function giveId (i, a, incrI, incrA, color) {
 // for (let canMove in boardSquare) {}
 // delete boardSquare.canMove;
 
-function figureAdd (id, color, type, firstTurn) {
+function figureAdd (id, color, type, specialFeature) {
   let check = true;
 
   figures.forEach(element => {
@@ -35,14 +37,27 @@ function figureAdd (id, color, type, firstTurn) {
     }
   });
 
-  if (check) {
+  if (check && type === 'pawn') {
+    figures.push({
+      id,
+      type,
+      color
+    });
+  } else if (check && type === 'king') {
     figures.push({
       id,
       type,
       color,
-      firstTurn
+      castling: specialFeature
+    });
+  } else if (check) {
+    figures.push({
+      id,
+      type,
+      color
     });
   }
+
   figurePositionChange(id);
   render();
 }
@@ -61,13 +76,30 @@ function figurePositionChange (toId, fromId) {
     toSquare.isEmpty = false;
     fromSquare.isEmpty = true;
 
+    if (figureFrom.type === 'pawn') {
+      if ((figureFrom.color === 'white' && toId[1] === '8') || (figureFrom.color === 'black' && toId[1] === '1')) {
+        pawnToQueen(figureFrom);
+      }
+      if ((Number(fromId[1]) - Number(toId[1]) < -1 && figureFrom.color === 'white') || (Number(fromId[1]) - Number(toId[1]) > 1 && figureFrom.color === 'black')) {
+        console.log('En Passant');
+        figureFrom.EnPassant = true;
+      } else {
+        delete figureFrom.EnPassant;
+      }
+    }
+
     addHistory(fromId, toId, figureFrom.color, figureFrom.type);
+    turnChange();
   } else if (toId) { // goes here only on figure's creation
     boardSquare[toId].isEmpty = false;
     figureTo.x = boardSquare[toId].x;
     figureTo.y = boardSquare[toId].y;
   }
   render();
+}
+
+function pawnToQueen (figure) {
+  figure.type = 'queen';
 }
 
 function figureRemove (id, all) {
@@ -80,6 +112,16 @@ function figureRemove (id, all) {
     figures = [];
   }
   render();
+}
+
+function turnChange () {
+  if (turn === 'white') {
+    turn = 'black';
+  } else {
+    turn = 'white';
+  }
+  const tunrCount = document.getElementById('turnCount');
+  tunrCount.innerText = turn + ' turn!';
 }
 
 // VISUAL
@@ -160,17 +202,23 @@ function createCheckBoard () {
   });
 }
 
-function movesDraw (id, direction, initialColor, amountOfMoves) {
+function movesDraw (id, direction, movingFigure, amountOfMoves) {
   let localId = id;
   let index = 0;
-  const toFigureColor = getFigureById(localId);
-  const fromFigureColor = initialColor;
+  let toFigureColor;
+
+  const fromFigureColor = movingFigure.color;
   if (amountOfMoves) {
     index = 8 - amountOfMoves;
   }
+  console.log(localId, toFigureColor, fromFigureColor);
   try {
     while (index < 8) {
-      if (boardSquare[localId].isEmpty === false && toFigureColor.color !== fromFigureColor) {
+      try {
+        toFigureColor = getFigureById(localId).color;
+      } catch (error) {
+      }
+      if (boardSquare[localId].isEmpty === false && toFigureColor !== fromFigureColor) {
         index = 10;
         ctx.fillStyle = 'rgb(135, 135, 135)';
         ctx.fillRect(boardSquare[localId].x, boardSquare[localId].y, 100, 100);
@@ -267,9 +315,9 @@ function figDef () {
   figureAdd('f8', 'black', 'bishop');
 
   figureAdd('d1', 'white', 'queen');
-  figureAdd('e1', 'white', 'king');
+  figureAdd('e1', 'white', 'king', true);
   figureAdd('d8', 'black', 'queen');
-  figureAdd('e8', 'black', 'king');
+  figureAdd('e8', 'black', 'king', true);
 }
 
 function addHistory (fromId, toId, color, type) {
@@ -328,9 +376,14 @@ function isEmpty (id) {
 }
 
 function figureMove (idIn) {
-  let secondColor;
   const element = getFigureById(idIn);
+  if (element.color !== turn) {
+    isFigurePicked = false;
+    return;
+  }
+
   let secondElement;
+  let secondColor;
 
   const firstColor = element.color;
   canvas.addEventListener('click', (e) => {
@@ -373,6 +426,10 @@ function highlightMove (id) {
 
   const element = getFigureById(id);
   const elementColor = element.color;
+  if (elementColor !== turn) {
+    figureDraw();
+    return;
+  }
 
   const topId = getSquareId((element.x + 1), (element.y - square + 1));
   const rightId = getSquareId((element.x + square + 1), (element.y + 1));
@@ -402,58 +459,58 @@ function highlightMove (id) {
     case 'bishop':
       console.log(element.type);
 
-      movesDraw(topRightId, 'top-right', elementColor);
-      movesDraw(bottomRightId, 'bottom-right', elementColor);
-      movesDraw(bottomLeftId, 'bottom-left', elementColor);
-      movesDraw(topLeftId, 'top-left', elementColor);
+      movesDraw(topRightId, 'top-right', element);
+      movesDraw(bottomRightId, 'bottom-right', element);
+      movesDraw(bottomLeftId, 'bottom-left', element);
+      movesDraw(topLeftId, 'top-left', element);
       break;
     case 'knight':
       console.log(element.type);
 
-      movesDraw(topRight, 'top-right', elementColor, 1);
-      movesDraw(topLeft, 'top-left', elementColor, 1);
-      movesDraw(rightTop, 'right-top', elementColor, 1);
-      movesDraw(rightBottom, 'right-bottom', elementColor, 1);
+      movesDraw(topRight, 'top-right', element, 1);
+      movesDraw(topLeft, 'top-left', element, 1);
+      movesDraw(rightTop, 'right-top', element, 1);
+      movesDraw(rightBottom, 'right-bottom', element, 1);
 
-      movesDraw(bottomRight, 'bottom-right', elementColor, 1);
-      movesDraw(bottomLeft, 'bottom-left', elementColor, 1);
-      movesDraw(leftTop, 'left-top', elementColor, 1);
-      movesDraw(leftBottom, 'left-bottom', elementColor, 1);
+      movesDraw(bottomRight, 'bottom-right', element, 1);
+      movesDraw(bottomLeft, 'bottom-left', element, 1);
+      movesDraw(leftTop, 'left-top', element, 1);
+      movesDraw(leftBottom, 'left-bottom', element, 1);
       break;
     case 'rook':
       console.log(element.type);
 
-      movesDraw(topId, 'top', elementColor);
-      movesDraw(rightId, 'right', elementColor);
-      movesDraw(bottomId, 'bottom', elementColor);
-      movesDraw(leftId, 'left', elementColor);
+      movesDraw(topId, 'top', element);
+      movesDraw(rightId, 'right', element);
+      movesDraw(bottomId, 'bottom', element);
+      movesDraw(leftId, 'left', element);
       break;
     case 'queen':
       console.log(element.type);
 
-      movesDraw(topId, 'top', elementColor);
-      movesDraw(rightId, 'right', elementColor);
-      movesDraw(bottomId, 'bottom', elementColor);
-      movesDraw(leftId, 'left', elementColor);
+      movesDraw(topId, 'top', element);
+      movesDraw(rightId, 'right', element);
+      movesDraw(bottomId, 'bottom', element);
+      movesDraw(leftId, 'left', element);
 
-      movesDraw(topRightId, 'top-right', elementColor);
-      movesDraw(bottomRightId, 'bottom-right', elementColor);
-      movesDraw(bottomLeftId, 'bottom-left', elementColor);
-      movesDraw(topLeftId, 'top-left', elementColor);
+      movesDraw(topRightId, 'top-right', element);
+      movesDraw(bottomRightId, 'bottom-right', element);
+      movesDraw(bottomLeftId, 'bottom-left', element);
+      movesDraw(topLeftId, 'top-left', element);
 
       break;
     case 'king':
       console.log(element.type);
 
-      movesDraw(topId, 'top', elementColor, 1);
-      movesDraw(rightId, 'right', elementColor, 1);
-      movesDraw(bottomId, 'bottom', elementColor, 1);
-      movesDraw(leftId, 'left', elementColor, 1);
+      movesDraw(topId, 'top', element, 1);
+      movesDraw(rightId, 'right', element, 1);
+      movesDraw(bottomId, 'bottom', element, 1);
+      movesDraw(leftId, 'left', element, 1);
 
-      movesDraw(topRightId, 'top-right', elementColor, 1);
-      movesDraw(bottomRightId, 'bottom-right', elementColor, 1);
-      movesDraw(bottomLeftId, 'bottom-left', elementColor, 1);
-      movesDraw(topLeftId, 'top-left', elementColor, 1);
+      movesDraw(topRightId, 'top-right', element, 1);
+      movesDraw(bottomRightId, 'bottom-right', element, 1);
+      movesDraw(bottomLeftId, 'bottom-left', element, 1);
+      movesDraw(topLeftId, 'top-left', element, 1);
       break;
 
     default:
@@ -464,32 +521,40 @@ function highlightMove (id) {
       }
 
       if (element.color === 'white') {
-        movesDraw(topId, 'top', elementColor, moves);
         color = -1;
-      } else {
-        movesDraw(bottomId, 'bottom', elementColor, moves);
+        if (boardSquare[topId].isEmpty !== false) {
+          movesDraw(topId, 'top', element, moves);
+        }
+      } else if (element.color === 'black') {
         color = 1;
+        if (boardSquare[bottomId].isEmpty !== false) {
+          movesDraw(bottomId, 'bottom', element, moves);
+        }
       }
 
       try {
         rightSquare = getSquareId((boardSquare[id].x + square + 1), (boardSquare[id].y + square * color + 1));
-        leftSquare = getSquareId((boardSquare[id].x - square + 1), (boardSquare[id].y + square * color + 1));
+
         if (boardSquare[rightSquare].isEmpty === false) {
           if (element.color === 'white') {
-            movesDraw(rightSquare, 'top-right', elementColor, 1);
+            movesDraw(rightSquare, 'top-right', element, 1);
           } else {
-            movesDraw(rightSquare, 'bottom-right', elementColor, 1);
+            movesDraw(rightSquare, 'bottom-right', element, 1);
           }
         }
+      } catch (e) {}
+      try {
+        leftSquare = getSquareId((boardSquare[id].x - square + 1), (boardSquare[id].y + square * color + 1));
         if (boardSquare[leftSquare].isEmpty === false) {
           if (element.color === 'white') {
-            movesDraw(leftSquare, 'top-right', elementColor, 1);
+            movesDraw(leftSquare, 'top-right', element, 1);
           } else {
-            movesDraw(leftSquare, 'bottom-right', elementColor, 1);
+            movesDraw(leftSquare, 'bottom-right', element, 1);
           }
         }
-      } catch (error) {
-      }
+      } catch (e) {}
+      // En Pasant
+
       break;
   }
 
