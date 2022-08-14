@@ -14,6 +14,8 @@ let turn = 'white'; // white or black
 const letters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
 const numbers = [8, 7, 6, 5, 4, 3, 2, 1];
 
+let enPassantFigure;
+
 // fills array 'boardSquare' with objects contining ID and location of square
 function giveId (i, a, incrI, incrA, color) {
   const id = '' + letters[i] + numbers[a];
@@ -67,6 +69,8 @@ function figurePositionChange (toId, fromId) {
   const figureTo = getFigureById(toId);
   const figureFrom = getFigureById(fromId);
 
+  let removeId;
+
   if (toId && fromId) { // goes here on figure's move
     const fromSquare = boardSquare[fromId];
     const toSquare = boardSquare[toId];
@@ -75,7 +79,7 @@ function figurePositionChange (toId, fromId) {
     figureFrom.y = toSquare.y;
     figureFrom.id = toSquare.id;
     toSquare.isEmpty = false;
-    fromSquare.isEmpty = true;
+    delete fromSquare.isEmpty;
 
     if (figureFrom.type === 'pawn') {
       if ((figureFrom.color === 'white' && toId[1] === '8') || (figureFrom.color === 'black' && toId[1] === '1')) {
@@ -83,9 +87,16 @@ function figurePositionChange (toId, fromId) {
       }
       if ((Number(fromId[1]) - Number(toId[1]) < -1 && figureFrom.color === 'white') || (Number(fromId[1]) - Number(toId[1]) > 1 && figureFrom.color === 'black')) {
         console.log('En Passant');
-        figureFrom.EnPassant = true;
+        figureFrom.enPassant = true;
+        enPassantFigure = figureFrom;
       } else {
-        delete figureFrom.EnPassant;
+        delete enPassantFigure.enPassant;
+      }
+      if (fromId[0] !== toId[0]) {
+        if (figureFrom.color === 'white') {
+          removeId = toId[0] + (Number(toId[1]) - 1);
+        } else removeId = toId[0] + (Number(toId[1]) + 1);
+        figureRemove(removeId);
       }
     }
 
@@ -103,15 +114,18 @@ function pawnToQueen (figure) {
   figure.type = 'queen';
 }
 
-function figureRemove (id, all) {
+function figureRemove (id) {
+  if (id === 'all') {
+    figures = [];
+    Object.entries(boardSquare).forEach(entry => delete entry[1].isEmpty);
+  }
   figures = figures.filter((element) => {
     if (id === element.id) {
+      delete boardSquare[id].isEmpty;
       return false;
     } else { return true; }
   });
-  if (all) {
-    figures = [];
-  }
+
   render();
 }
 
@@ -405,8 +419,7 @@ function highlightMove (id) {
   const topLeftId = getSquareId((element.x - square + 1), (element.y - square + 1));
 
   // Knight's moves
-  // 'top-right', 'top-left', 'right-top', 'right-bottom'
-  // 'bottom-right', 'bottom-left', 'left-top', 'left-bottom'
+
   const topRight = getSquareId((element.x + square + 1), (element.y - 2 * square + 1));
   const topLeft = getSquareId((element.x - square + 1), (element.y - 2 * square + 1));
   const rightTop = getSquareId((element.x + 2 * square + 1), (element.y - square + 1));
@@ -416,11 +429,8 @@ function highlightMove (id) {
   const leftTop = getSquareId((element.x - 2 * square + 1), (element.y - square + 1));
   const leftBottom = getSquareId((element.x - 2 * square + 1), (element.y + square + 1));
 
-  // const oneMove = false;
-
   switch (element.type) {
     case 'bishop':
-      console.log(element.type);
 
       movesDraw(topRightId, 'top-right', element);
       movesDraw(bottomRightId, 'bottom-right', element);
@@ -428,7 +438,6 @@ function highlightMove (id) {
       movesDraw(topLeftId, 'top-left', element);
       break;
     case 'knight':
-      console.log(element.type);
 
       movesDraw(topRight, 'top-right', element, 1);
       movesDraw(topLeft, 'top-left', element, 1);
@@ -441,7 +450,6 @@ function highlightMove (id) {
       movesDraw(leftBottom, 'left-bottom', element, 1);
       break;
     case 'rook':
-      console.log(element.type);
 
       movesDraw(topId, 'top', element);
       movesDraw(rightId, 'right', element);
@@ -449,7 +457,6 @@ function highlightMove (id) {
       movesDraw(leftId, 'left', element);
       break;
     case 'queen':
-      console.log(element.type);
 
       movesDraw(topId, 'top', element);
       movesDraw(rightId, 'right', element);
@@ -463,7 +470,6 @@ function highlightMove (id) {
 
       break;
     case 'king':
-      console.log(element.type);
 
       movesDraw(topId, 'top', element, 1);
       movesDraw(rightId, 'right', element, 1);
@@ -494,7 +500,7 @@ function highlightMove (id) {
           movesDraw(bottomId, 'bottom', element, moves);
         }
       }
-
+      // diagonal attack
       try {
         rightSquare = getSquareId((boardSquare[id].x + square + 1), (boardSquare[id].y + square * color + 1));
 
@@ -517,6 +523,20 @@ function highlightMove (id) {
         }
       } catch (e) {}
       // En Pasant
+      try {
+        if (boardSquare[rightId].isEmpty === false && getFigureById(rightId).enPassant === true) {
+          if (element.color === 'white') {
+            movesDraw(topRightId, 'top-right', element, 1);
+          } else movesDraw(bottomRightId, 'bottom-right', element, 1);
+        }
+      } catch (e) {}
+      try {
+        if (boardSquare[leftId].isEmpty === false && getFigureById(leftId).enPassant === true) {
+          if (element.color === 'white') {
+            movesDraw(topLeftId, 'top-left', element, 1);
+          } else movesDraw(bottomLeftId, 'bottom-left', element, 1);
+        }
+      } catch (e) {}
 
       break;
   }
