@@ -11,3 +11,4 @@
 #.pnp.*
 .vscode/*
 node_modules/*
+src/test.js
