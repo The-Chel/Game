@@ -84,11 +84,6 @@ function figureRemove (id, all) {
 }
 
 // VISUAL
-const canvas = document.getElementById('myCanvas');
-canvas.style.backgroundColor = 'rgb(148, 106, 62)';
-
-const ctx = canvas.getContext('2d');
-
 const square = 100; // 100px
 
 function render () { // erases the screen, updates visual inforamtion
@@ -142,8 +137,7 @@ function movesDraw (id, direction, initialColor, amountOfMoves) {
     while (index < 8) {
       if (boardSquare[localId].isEmpty === false && toFigureColor.color !== fromFigureColor) {
         index = 10;
-        ctx.fillStyle = 'rgb(135, 135, 135)';
-        ctx.fillRect(boardSquare[localId].x, boardSquare[localId].y, 100, 100);
+        canva.fillSquare(boardSquare[localId].x, boardSquare[localId].y, 'rgb(135, 135, 135)');
         console.log('Figure on', direction);
         boardSquare[localId].canMove = true;
         return;
@@ -155,11 +149,10 @@ function movesDraw (id, direction, initialColor, amountOfMoves) {
 
       const squareColor = boardSquare[localId].color;
       if (squareColor === 'brown') {
-        ctx.fillStyle = 'rgb(63, 38, 13)';
+        canva.fillSquare(boardSquare[localId].x, boardSquare[localId].y, 'rgb(63, 38, 13)');
       } else if (squareColor === 'light') {
-        ctx.fillStyle = 'rgb(155, 122, 44)';
+        canva.fillSquare(boardSquare[localId].x, boardSquare[localId].y, 'rgb(155, 122, 44)');
       }
-      ctx.fillRect(boardSquare[localId].x, boardSquare[localId].y, 100, 100);
 
       switch (direction) {
         case 'top':
@@ -264,7 +257,7 @@ function addHistory (fromId, toId, color, type) {
 
 // CALCULATION
 
-canvas.addEventListener('click', (e) => {
+canva.addEventListener('click', (e) => {
   const squareId = getSquareId(e.offsetX, e.offsetY);
   // if square isEmpty = false, then find figure on the square
   if (isEmpty(squareId) === false && isFigurePicked === false) {
@@ -303,7 +296,7 @@ function figureMove (idIn) {
   let secondElement;
 
   const firstColor = element.color;
-  canvas.addEventListener('click', (e) => {
+  canva.addEventListener('click', (e) => {
     const squareId = getSquareId(e.offsetX, e.offsetY);
     secondElement = getFigureById(squareId);
     try {
@@ -333,7 +326,7 @@ function figureMove (idIn) {
 
 function highlightMove (id) {
   //  first half of render() to redraw board with no figures
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  canva.clear();
   canva.createCheckBoard();
 
   let moves = 1;

@@ -4,7 +4,7 @@ function init () {
 
   const ctx = canvas.getContext('2d');
 
-  const square = 100; // 100px
+  const squareSize = 100; // 100px
   const figureUnicodes = {
     king: { black: '\u265A', white: '\u2654' },
     queen: { black: '\u265B', white: '\u2655' },
@@ -17,11 +17,11 @@ function init () {
   const letters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
   const numbers = [8, 7, 6, 5, 4, 3, 2, 1];
 
-  const clear = function () {
+  function clear () {
     ctx.clearRect(0, 0, canvas.width, canvas.height); // deletes evrything
   };
 
-  const figuresDraw = function (figures) {
+  function figuresDraw (figures) {
     ctx.save();
     figures.forEach(element => {
       ctx.fillStyle = 'black';
@@ -62,10 +62,17 @@ function init () {
     }
   }
 
+  function fillSquare (x, y, color) {
+    ctx.fillStyle = color;
+    ctx.fillRect(x, y, squareSize, squareSize);
+  };
+
   return {
     clear,
     figuresDraw,
-    createCheckBoard
+    createCheckBoard,
+    fillSquare,
+    addEventListener: (type, listener, options) => canvas.addEventListener(type, listener, options)
   };
 }
 
