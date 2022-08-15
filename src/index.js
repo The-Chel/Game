@@ -7,14 +7,13 @@ let IdsGiven = 0;
 let isFigurePicked = false;
 
 const historyArray = [];
-let historyCount = 1;
 
 let turn = 'white'; // white or black
 
 const letters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
 const numbers = [8, 7, 6, 5, 4, 3, 2, 1];
 
-let enPassantFigure;
+const enPassantFigures = [];
 
 // fills array 'boardSquare' with objects contining ID and location of square
 function giveId (i, a, incrI, incrA, color) {
@@ -81,27 +80,41 @@ function figurePositionChange (toId, fromId) {
     toSquare.isEmpty = false;
     delete fromSquare.isEmpty;
 
+    // Spetial moves for Pawns
     if (figureFrom.type === 'pawn') {
+      // Pawn to Queen
       if ((figureFrom.color === 'white' && toId[1] === '8') || (figureFrom.color === 'black' && toId[1] === '1')) {
         pawnToQueen(figureFrom);
       }
-      if ((Number(fromId[1]) - Number(toId[1]) < -1 && figureFrom.color === 'white') || (Number(fromId[1]) - Number(toId[1]) > 1 && figureFrom.color === 'black')) {
-        console.log('En Passant');
-        figureFrom.enPassant = true;
-        enPassantFigure = figureFrom;
-      } else {
-        delete enPassantFigure.enPassant;
-      }
-      if (fromId[0] !== toId[0]) {
-        if (figureFrom.color === 'white') {
-          removeId = toId[0] + (Number(toId[1]) - 1);
-        } else removeId = toId[0] + (Number(toId[1]) + 1);
-        figureRemove(removeId);
-      }
+      // En Passan
+      try {
+        if ((Number(fromId[1]) - Number(toId[1]) < -1 && figureFrom.color === 'white') || (Number(fromId[1]) - Number(toId[1]) > 1 && figureFrom.color === 'black')) {
+          console.log('En Passant');
+          figureFrom.enPassant = true;
+          enPassantFigures.push(figureFrom.id);
+        } else {
+          enPassantFigures.forEach(id => {
+            const virtualFigure = getFigureById(id);
+            delete virtualFigure.enPassant;
+          });
+        }
+        if (fromId[0] !== toId[0]) {
+          if (figureFrom.color === 'white') {
+            removeId = toId[0] + (Number(toId[1]) - 1);
+            if (getFigureById(removeId).color !== 'white') {
+              figureRemove(removeId);
+            }
+          } else {
+            removeId = toId[0] + (Number(toId[1]) + 1);
+            if (getFigureById(removeId).color !== 'black') {
+              figureRemove(removeId);
+            }
+          }
+        }
+      } catch (error) {}
     }
-
-    addHistory(fromId, toId, figureFrom.color, figureFrom.type);
     turnChange();
+    addHistory(fromId, toId);
   } else if (toId) { // goes here only on figure's creation
     boardSquare[toId].isEmpty = false;
     figureTo.x = boardSquare[toId].x;
@@ -297,24 +310,28 @@ function figDef () {
   figureAdd('e8', 'black', 'king', true);
 }
 
-function addHistory (fromId, toId, color, type) {
-  const HistoryHolder = document.getElementById('historyHolder');
-  HistoryHolder.innerHTML = '';
-  const pushValue = [fromId, toId, color, type, historyCount];
+function addHistory (fromId, toId) {
+  const historyHolder = document.getElementById('historyHolder');
+  historyHolder.innerHTML = '';
 
-  historyArray.push(pushValue);
-
-  historyArray.forEach(element => {
-    const historyMove = document.createElement('div');
-    const colorTo = element[2].charAt(0).toUpperCase() + element[2].slice(1);
-    historyMove.innerText = element[4] + '. ' + colorTo + ' ' + element[3] + ' moved from "' + element[0] + '" to "' + element[1] + '"';
-    historyMove.id = 'history';
-    HistoryHolder.appendChild(historyMove);
-  });
+  const elementFrom = getFigureById(toId);
+  let type = elementFrom.type[0].toUpperCase();
+  if (elementFrom.type === 'knight') {
+    type = 'N';
+  }
   if (historyArray.length > 35) {
     historyArray.shift();
   }
-  historyCount++;
+  const pushValue = [type, toId];
+
+  historyArray.push(pushValue);
+
+  historyArray.forEach(e => {
+    const historyMove = document.createElement('div');
+    historyMove.innerText = e[0] + e[1];
+    historyMove.id = 'history';
+    historyHolder.appendChild(historyMove);
+  });
 }
 
 // CALCULATION
@@ -383,9 +400,7 @@ function figureMove (idIn) {
           figurePositionChange(squareId, idIn);
         } else { console.log('by ally'); }
       }
-    } catch (error) {
-
-    }
+    } catch (error) { console.log('ERROR in figureMove()'); }
     isFigurePicked = false;
     render();
   }, { once: true });
