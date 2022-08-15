@@ -494,7 +494,6 @@ function figureMove (idIn) {
 
         if (firstColor !== secondColor && boardSquare[squareId].canMove) {
           console.log('by enemy');
-          // figureRemove(squareId);
           figurePositionChange(squareId, idIn);
         } else { console.log('by ally'); }
       }
