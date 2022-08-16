@@ -447,7 +447,7 @@ function addHistory (historyType, fromId, toId) {
       pushValue = toId + 'Q';
       break;
     case 'castling-queen':
-      if (color === 'white') pushValue = '0-0-0';
+      pushValue = '0-0-0';
       break;
     case 'castling-king':
       pushValue = '0-0';
