@@ -519,7 +519,7 @@ function figureMove (idIn) {
     if (boardSquare[squareId].canMove) {
       figurePositionChange(squareId, idIn);
     }
-
+    
     isFigurePicked = false;
     render();
   }, { once: true });
