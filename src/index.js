@@ -450,7 +450,7 @@ function addHistory (historyType, fromId, toId) {
       if (color === 'white') pushValue = '0-0-0';
       break;
     case 'castling-king':
-      if (color === 'white') pushValue = '0-0';
+      pushValue = '0-0';
       break;
 
     default:
