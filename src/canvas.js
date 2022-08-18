@@ -72,7 +72,8 @@ function init () {
     figuresDraw,
     createCheckBoard,
     fillSquare,
-    addEventListener: (type, listener, options) => canvas.addEventListener(type, listener, options)
+    addEventListener: (type, listener, options) => canvas.addEventListener(type, listener, options),
+    squareSize
   };
 }
 

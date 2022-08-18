@@ -1,4 +1,6 @@
 const canva = window.canvas;
+const square = canva.squareSize;
+
 // MODEL
 const boardSquare = {};
 let figures = [];
@@ -16,15 +18,13 @@ function giveId (i, a, incrI, incrA, color) {
   const id = '' + letters[i] + numbers[a];
   const x = 25 + incrI;
   const y = 25 + incrA;
-  boardSquare[id] = ({ // canMove = false;
+  boardSquare[id] = ({
     id,
     x,
     y,
     color
   });
 }
-// for (let canMove in boardSquare) {}
-// delete boardSquare.canMove;
 
 function figureAdd (id, color, type, specialFeature) {
   let check = true;
@@ -133,7 +133,6 @@ const history = new History();
 
 function figurePositionChange (toId, fromId) {
   const figureTo = getFigureById(toId);
-  console.log('pos change');
   if (toId && fromId) { // goes here on figure's move
     const fromSquare = boardSquare[fromId];
     const toSquare = boardSquare[toId];
@@ -213,10 +212,8 @@ function enPassant (fromId, toId, check) {
     } else {
       removeId = toId[0] + (Number(toId[1]) + 1);
       if (!getFigureById(removeId)) return returnValue;
-      console.log('fifst');
       if (getFigureById(removeId).color !== 'black' && getFigureById(removeId).enPassant) {
         figureRemove(removeId);
-        console.log('second');
       }
     }
     if (returnCheck) {
@@ -320,7 +317,6 @@ function turnChange () {
 }
 
 // VISUAL
-const square = 100; // 100px
 
 function render () { // erases the screen, updates visual inforamtion
   canva.clear();
@@ -476,11 +472,9 @@ function figDef () {
 
 canva.addEventListener('click', (e) => {
   const squareId = getSquareId(e.offsetX, e.offsetY);
-  console.log('first listener');
   if (!squareId) return;
   // if square isEmpty = false, then find figure on the square
   if (boardSquare[squareId].isEmpty === false && isFigurePicked === false) {
-    console.log('after listener');
     isFigurePicked = true;
     highlightMove(squareId);
     figureMove(squareId);
@@ -506,7 +500,6 @@ function figureMove (idIn) {
     isFigurePicked = false;
     return;
   }
-  console.log('fig move');
   canva.addEventListener('click', (e) => {
     const squareId = getSquareId(e.offsetX, e.offsetY);
 
@@ -618,14 +611,12 @@ function highlightMove (id) {
       if (element.castling) {
         if (element.color === 'white') {
           if (boardSquare.f1.isEmpty !== false && boardSquare.g1.isEmpty !== false && getFigureById('h1').castling) {
-            console.log('Castling Right is AVALIABLE');
             movesDraw('g1', '', element, 1);
           } else if (boardSquare.d1.isEmpty !== false && boardSquare.c1.isEmpty !== false && boardSquare.b1.isEmpty !== false && getFigureById('a1').castling) {
             movesDraw('c1', '', element, 1);
           }
         } else if (element.color === 'black') {
           if (boardSquare.f8.isEmpty !== false && boardSquare.g8.isEmpty !== false && getFigureById('h8').castling) {
-            console.log('Castling Right is AVALIABLE');
             movesDraw('g8', '', element, 1);
           } else if (boardSquare.d8.isEmpty !== false && boardSquare.c8.isEmpty !== false && boardSquare.b8.isEmpty !== false && getFigureById('a8').castling) {
             movesDraw('c8', '', element, 1);
