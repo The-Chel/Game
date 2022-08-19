@@ -36,7 +36,7 @@ function init () {
     let isBlack = true;
 
     for (let a = 0; a < 8; a++) {
-      const incrA = a * 100;
+      const incrA = a * squareSize;
 
       ctx.fillStyle = 'black';
       ctx.font = '25px Arial';
@@ -46,7 +46,7 @@ function init () {
       ctx.fillText(numbers[a], 831, 80 + incrA);
 
       for (let i = 0; i < 8; i++) {
-        const incrI = i * 100;
+        const incrI = i * squareSize;
 
         if (isBlack) {
           ctx.fillStyle = 'rgb(209, 173, 90)';
@@ -54,7 +54,7 @@ function init () {
           ctx.fillStyle = 'rgb(94, 57, 19)';
         }
 
-        ctx.fillRect(25 + incrI, 25 + incrA, 100, 100);
+        ctx.fillRect(25 + incrI, 25 + incrA, squareSize, squareSize);
 
         isBlack = !isBlack;
       }

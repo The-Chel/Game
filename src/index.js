@@ -152,7 +152,7 @@ function figurePositionChange (toId, fromId) {
     // Spetial moves for Pawns
     if (figureFrom.type === 'pawn') {
       // Pawn to Queen
-      check = pawnToQueen(figureFrom, toId, check, fromId);
+      check = promotion(figureFrom, toId, check, fromId);
       // En Passan
       result = enPassant(fromId, toId, check); // BUG HERE
       // Pawn gets enPassant tag on double move and can be removed
@@ -238,19 +238,33 @@ function enPassantRemove (moveThisTurn) {
     }
   });
 }
-function pawnToQueen (figureFrom, toId, checkFrom, fromId) {
+function promotion (figureFrom, toId, checkFrom, fromId) {
+  const idsToHistory = [fromId, toId];
   let check = checkFrom;
   if ((figureFrom.color === 'white' && toId[1] === '8') || (figureFrom.color === 'black' && toId[1] === '1')) {
-    figureFrom.type = 'queen';
-    if (check && boardSquare[toId].isEmpty === false) {
-      history.Add('capture-promotion', fromId, toId); // addHistory('capture-promotion', fromId, toId);
-      check = false;
-    } else if (check) {
-      history.Add('promotion', fromId, toId); // addHistory('promotion', fromId, toId);
-      check = false;
+    if (boardSquare[toId].isEmpty === false) {
+      promQuest(toId, idsToHistory, true);
+    } else {
+      promQuest(toId, idsToHistory);
     }
+    
+
+
+
+    check = false;
   }
+  
   return check;
+}
+let isPromoted
+function promotionYes(e) {
+  isPromoted = true;
+  const button = e.target;
+  const id = button.dataset.squareId;
+  const figure = getFigureById(id);
+  figure.type = 'queen';
+
+  promTurn('no');
 }
 
 function castlingKing (figureFrom, toId, checkFrom) {
@@ -710,3 +724,27 @@ function getFigureById (id) {
 
 render();
 figDef();
+//
+function promQuest (id) {
+  if (!boardSquare[id]) return;
+  const x = boardSquare[id].x;
+  const y = boardSquare[id].y;
+  const elemStyle = document.getElementById('promotion').style;
+  const yesButton = document.getElementById('yesButton');
+
+  yesButton.dataset.squareId = id;
+
+  elemStyle.display = 'initial';
+  elemStyle.left = x + 'px';
+  elemStyle.top = y + 'px';
+  promTurn('on');
+}
+
+function promTurn (e) {
+  const position = document.getElementById('promotion').style;
+  if (e === 'no') {
+    position.display = 'none';
+  } else if (e === 'yes') {
+    position.display = 'initial';
+  }
+}
