@@ -86,7 +86,6 @@ function init () {
     fillSquare,
     pixelsToNumber,
     addEventListener: (type, listener, options) => canvas.addEventListener(type, listener, options),
-    squareSize
   };
 }
 
