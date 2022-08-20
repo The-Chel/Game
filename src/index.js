@@ -585,7 +585,7 @@ function highlightMove (id) {
       }
       // diagonal attack
 
-      rightSquare = getSquareId((boardSquare[id].x + 1), (boardSquare[id].y + 1 * color));
+      rightSquare = getSquareId((boardSquare[id].x + 1), (boardSquare[id].y + color));
       if (rightSquare) {
         if (boardSquare[rightSquare].isEmpty === false) {
           if (element.color === 'white') {
