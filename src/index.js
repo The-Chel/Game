@@ -11,6 +11,8 @@ let turn = 'white'; // white or black
 const letters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
 const numbers = [8, 7, 6, 5, 4, 3, 2, 1];
 
+let toButtonsOnPromotion = [false];
+
 // fills array 'boardSquare' with objects contining ID and location of square
 function giveId (i, a, incrI, incrA, color) {
   const id = '' + letters[i] + numbers[a];
@@ -133,7 +135,7 @@ const history = new History();
 
 function figurePositionChange (toId, fromId) {
   const figureTo = getFigureById(toId);
-  console.log('pos change');
+  toButtonsOnPromotion[0] = false;
   if (toId && fromId) { // goes here on figure's move
     const fromSquare = boardSquare[fromId];
     const toSquare = boardSquare[toId];
@@ -239,30 +241,32 @@ function enPassantRemove (moveThisTurn) {
   });
 }
 function promotion (figureFrom, toId, checkFrom, fromId) {
-  const idsToHistory = [fromId, toId];
   let check = checkFrom;
+  toButtonsOnPromotion = [true, fromId, toId];
   if ((figureFrom.color === 'white' && toId[1] === '8') || (figureFrom.color === 'black' && toId[1] === '1')) {
     if (boardSquare[toId].isEmpty === false) {
-      promQuest(toId, idsToHistory, true);
+      toButtonsOnPromotion[0] = true;
+      promQuest(toId);
     } else {
-      promQuest(toId, idsToHistory);
+      promQuest(toId);
     }
-    
-
-
-
     check = false;
   }
-  
+
   return check;
 }
-let isPromoted
+
 function promotionYes(e) {
-  isPromoted = true;
   const button = e.target;
   const id = button.dataset.squareId;
   const figure = getFigureById(id);
+  const fromId = toButtonsOnPromotion[1];
+  const toId = toButtonsOnPromotion[2];
+
   figure.type = 'queen';
+  if (toButtonsOnPromotion[0]) {
+    history.Add('capture-promotion', fromId, toId);
+  } else { history.Add('promotion', fromId, toId); }
 
   promTurn('no');
 }
