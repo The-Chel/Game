@@ -485,14 +485,14 @@ function highlightMove (id) {
   let leftTop;
   let leftBottom;
   if (element.type === 'knight') {
-    topRight = getSquareId((element.x + 1), (element.y - 2 * 1));
-    topLeft = getSquareId((element.x - 1), (element.y - 2 * 1));
-    rightTop = getSquareId((element.x + 2 * 1), (element.y - 1));
-    rightBottom = getSquareId((element.x + 2 * 1), (element.y + 1));
-    bottomRight = getSquareId((element.x + 1), (element.y + 2 * 1));
-    bottomLeft = getSquareId((element.x - 1), (element.y + 2 * 1));
-    leftTop = getSquareId((element.x - 2 * 1), (element.y - 1));
-    leftBottom = getSquareId((element.x - 2 * 1), (element.y + 1));
+    topRight = getSquareId((element.x + 1), (element.y - 2));
+    topLeft = getSquareId((element.x - 1), (element.y - 2));
+    rightTop = getSquareId((element.x + 2), (element.y - 1));
+    rightBottom = getSquareId((element.x + 2), (element.y + 1));
+    bottomRight = getSquareId((element.x + 1), (element.y + 2));
+    bottomLeft = getSquareId((element.x - 1), (element.y + 2));
+    leftTop = getSquareId((element.x - 2), (element.y - 1));
+    leftBottom = getSquareId((element.x - 2), (element.y + 1));
   }
 
   switch (element.type) {
