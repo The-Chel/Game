@@ -596,7 +596,7 @@ function highlightMove (id) {
         }
       }
 
-      leftSquare = getSquareId((boardSquare[id].x - 1), (boardSquare[id].y + 1 * color));
+      leftSquare = getSquareId((boardSquare[id].x - 1), (boardSquare[id].y + color));
       if (leftSquare) {
         if (boardSquare[leftSquare].isEmpty === false) {
           if (element.color === 'white') {
