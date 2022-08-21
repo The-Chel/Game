@@ -36,7 +36,7 @@ function init () {
     let isBlack = true;
 
     for (let a = 0; a < 8; a++) {
-      const incrA = a * 100;
+      const incrA = a * squareSize;
 
       ctx.fillStyle = 'black';
       ctx.font = '25px Arial';
@@ -46,7 +46,7 @@ function init () {
       ctx.fillText(numbers[a], 831, 80 + incrA);
 
       for (let i = 0; i < 8; i++) {
-        const incrI = i * 100;
+        const incrI = i * squareSize;
 
         if (isBlack) {
           ctx.fillStyle = 'rgb(209, 173, 90)';
@@ -54,7 +54,7 @@ function init () {
           ctx.fillStyle = 'rgb(94, 57, 19)';
         }
 
-        ctx.fillRect(25 + incrI, 25 + incrA, 100, 100);
+        ctx.fillRect(25 + incrI, 25 + incrA, squareSize, squareSize);
 
         isBlack = !isBlack;
       }
@@ -69,13 +69,20 @@ function init () {
     } else ctx.fillRect(x, y, squareSize, squareSize);
   };
 
-  function pixelsToNumber (xPx, yPx) {
+  function pixelsToNumbers (xPx, yPx) {
     const x = xPx - 25;
     const y = yPx - 25;
-    const localX = Math.trunc(x / 100);
-    const localY = Math.trunc(y / 100);
+    const localX = Math.trunc(x / squareSize);
+    const localY = Math.trunc(y / squareSize);
     const returnArray = [localX, localY];
 
+    return returnArray;
+  }
+
+  function numberToPixels (xN, yN) {
+    const x = xN * squareSize + 25;
+    const y = yN * squareSize + 35;
+    const returnArray = [x, y];
     return returnArray;
   }
 
@@ -84,8 +91,10 @@ function init () {
     figuresDraw,
     createCheckBoard,
     fillSquare,
-    pixelsToNumber,
-    addEventListener: (type, listener, options) => canvas.addEventListener(type, listener, options),
+    pixelsToNumbers,
+    numberToPixels,
+    addEventListener: (type, listener, options) => canvas.addEventListener(type, listener, options)
+
   };
 }
 

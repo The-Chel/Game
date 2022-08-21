@@ -1,5 +1,4 @@
 const canva = window.canvas;
-const square = canva.squareSize;
 
 const history = window.chessHistory;
 
@@ -14,6 +13,8 @@ let turn = 'white'; // white or black
 
 const letters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
 const numbers = [8, 7, 6, 5, 4, 3, 2, 1];
+
+let toButtonsOnPromotion = [false];
 
 // fills array 'boardSquare' with objects contining ID and location of square
 function giveId (i, a, color) {
@@ -58,11 +59,15 @@ function figureAdd (id, color, type, specialFeature) {
 
 function figurePositionChange (toId, fromId) {
   const figureTo = getFigureById(toId);
+  toButtonsOnPromotion[0] = false;
+
   if (toId && fromId) { // goes here on figure's move
     const fromSquare = boardSquare[fromId];
     const toSquare = boardSquare[toId];
 
     const figureFrom = getFigureById(fromId);
+
+    toButtonsOnPromotion = [false, figureFrom.color, fromId, toId]; // information for buttons
 
     let result;
     let check = true;
@@ -70,13 +75,14 @@ function figurePositionChange (toId, fromId) {
     let moveType = 'regular';
     if (toSquare.isEmpty === false) {
       moveType = 'capture';
+      toButtonsOnPromotion[0] = true;
     }
-    figureRemove(toId);
 
     // Spetial moves for Pawns
     if (figureFrom.type === 'pawn') {
       // Pawn to Queen
-      check = pawnToQueen(figureFrom, toId, check, fromId);
+
+      check = promotion(figureFrom, toId, check);
       // En Passan
       result = enPassant(fromId, toId, check); // BUG HERE
       // Pawn gets enPassant tag on double move and can be removed
@@ -95,9 +101,10 @@ function figurePositionChange (toId, fromId) {
     }
 
     // History addition
-    if (check) history.Add(moveType, fromId, toId); // addHistory(moveType, fromId, toId);
+    if (check) history.Add(moveType, figureFrom, toId);
 
     // Actual move
+    figureRemove(toId);
     figureFrom.x = toSquare.x;
     figureFrom.y = toSquare.y;
     figureFrom.id = toSquare.id;
@@ -142,7 +149,7 @@ function enPassant (fromId, toId, check) {
       }
     }
     if (returnCheck) {
-      history.Add('capture', fromId, toId); // addHistory('capture', fromId, toId);
+      history.Add('capture', figureFrom, toId); // addHistory('capture', fromId, toId);
       returnCheck = false;
       returnValue[0] = returnCheck;
       returnValue.push(returnValue);
@@ -160,19 +167,42 @@ function enPassantRemove (moveThisTurn) {
     }
   });
 }
-function pawnToQueen (figureFrom, toId, checkFrom, fromId) {
+
+function promotion (figureFrom, toId, checkFrom) {
   let check = checkFrom;
+
   if ((figureFrom.color === 'white' && toId[1] === '8') || (figureFrom.color === 'black' && toId[1] === '1')) {
-    figureFrom.type = 'queen';
-    if (check && boardSquare[toId].isEmpty === false) {
-      history.Add('capture-promotion', fromId, toId); // addHistory('capture-promotion', fromId, toId);
-      check = false;
-    } else if (check) {
-      history.Add('promotion', fromId, toId); // addHistory('promotion', fromId, toId);
-      check = false;
-    }
+    promQuest(toId);
+    check = false;
   }
+
   return check;
+}
+
+// eslint-disable-next-line no-unused-vars
+function promotionResponse (e, type) {
+  const button = e.target;
+  const id = button.dataset.squareId;
+  const figure = getFigureById(id);
+
+  const hasAttacked = toButtonsOnPromotion[0];
+  const fromColor = toButtonsOnPromotion[1];
+  const fromId = toButtonsOnPromotion[2];
+  const toId = toButtonsOnPromotion[3];
+
+  if (type === 'yes') {
+    figure.type = 'queen';
+    if (hasAttacked) {
+      history.AddPromotionCapture(fromId, fromColor, toId);
+    } else { history.AddPromotion(fromColor, toId); }
+  } else {
+    if (hasAttacked) {
+      history.Add('capture', figure, toId, fromId);
+    } else { history.Add('regular', figure, toId); }
+  }
+
+  promTurn('no');
+  render();
 }
 
 function castlingKing (figureFrom, toId, checkFrom) {
@@ -182,24 +212,24 @@ function castlingKing (figureFrom, toId, checkFrom) {
     if (fromId === 'e1' && toId === 'g1') {
       castling('f1', 'h1');
 
-      history.Add('castling-king', figureFrom.id, figureFrom.id); // addHistory('castling-king', figureFrom.id, figureFrom.id);
+      history.Add('castling-king', figureFrom, figureFrom.id); // addHistory('castling-king', figureFrom.id, figureFrom.id);
       check = false;
     } else if (fromId === 'e1' && toId === 'c1') {
       castling('d1', 'a1');
 
-      history.Add('castling-queen', figureFrom.id, figureFrom.id); // addHistory('castling-queen', figureFrom.id, figureFrom.id);
+      history.Add('castling-queen', figureFrom, figureFrom.id); // addHistory('castling-queen', figureFrom.id, figureFrom.id);
       check = false;
     }
   } else if (figureFrom.color === 'black') {
     if (fromId === 'e8' && toId === 'g8') {
       castling('f8', 'h8');
 
-      history.Add('castling-king', figureFrom.id, figureFrom.id); // addHistory('castling-king', figureFrom.id, figureFrom.id);// 0-0-0
+      history.Add('castling-king', figureFrom, figureFrom.id); // addHistory('castling-king', figureFrom.id, figureFrom.id);// 0-0-0
       check = false;
     } else if (fromId === 'e8' && toId === 'c8') {
       castling('d8', 'a8');
 
-      history.Add('castling-queen', figureFrom.id, figureFrom.id); // addHistory('castling-queen', figureFrom.id, figureFrom.id); // 0-0
+      history.Add('castling-queen', figureFrom, figureFrom.id); // addHistory('castling-queen', figureFrom.id, figureFrom.id); // 0-0
       check = false;
     }
   }
@@ -297,7 +327,6 @@ function movesDraw (id, direction, movingFigure, amountOfMoves, enPassant) {
       index = 10;
       if (amountOfMoves === 2) return;
       canva.fillSquare(boardSquare[localId].x, boardSquare[localId].y, 'rgb(135, 135, 135)');
-      console.log('Figure on', direction);
       boardSquare[localId].canMove = true;
       return;
     } else if (boardSquare[localId].isEmpty === false) {
@@ -362,6 +391,7 @@ function onButtonFigureDraw () {
 
 function figDef () {
   figures = [];
+  // turn = 'white';
   // PAWNS
   for (let i = 0; i < 8; i++) {
     const idW = letters[i] + '2';
@@ -413,7 +443,7 @@ function getSquareId (xPx, yPx) {
       if (xPx === element.x && yPx === element.y) returnId = element.id;
     });
   } else {
-    const XYcoords = canva.pixelsToNumber(xPx, yPx);
+    const XYcoords = canva.pixelsToNumbers(xPx, yPx);
     const x = XYcoords[0];
     const y = XYcoords[1];
     Object.entries(boardSquare).forEach(entry => {
@@ -421,7 +451,6 @@ function getSquareId (xPx, yPx) {
       if (x === element.x && y === element.y) returnId = element.id;
     });
   }
-  console.log(returnId);
   return returnId;
 }
 
@@ -484,6 +513,7 @@ function highlightMove (id) {
   let bottomLeft;
   let leftTop;
   let leftBottom;
+
   if (element.type === 'knight') {
     topRight = getSquareId((element.x + 1), (element.y - 2));
     topLeft = getSquareId((element.x - 1), (element.y - 2));
@@ -571,7 +601,8 @@ function highlightMove (id) {
       if ((element.id[1] === '2' && element.color === 'white') || (element.id[1] === '7' && element.color === 'black')) {
         moves = 2;
       }
-
+      if (!boardSquare[topId] && element.color === 'white') break;
+      if (!boardSquare[bottomId] && element.color === 'black') break;
       if (element.color === 'white') {
         color = -1;
         if (boardSquare[topId].isEmpty !== false) {
@@ -639,5 +670,34 @@ function getFigureById (id) {
   return returnElement;
 }
 
+function promQuest (id) {
+  if (!boardSquare[id]) return;
+  const pixCoords = canva.numberToPixels(boardSquare[id].x, boardSquare[id].y);
+  const x = pixCoords[0];
+  const y = pixCoords[1];
+  const elemStyle = document.getElementById('promotion').style;
+  const yesButton = document.getElementById('yesButton');
+  const noButton = document.getElementById('noButton');
+
+  yesButton.dataset.squareId = id;
+  noButton.dataset.squareId = id;
+
+  elemStyle.display = 'initial';
+  elemStyle.left = x + 'px';
+  elemStyle.top = y + 'px';
+  promTurn('yes');
+}
+
+function promTurn (e) {
+  const position = document.getElementById('promotion').style;
+  const screenBlock = document.getElementById('screenBlock').style;
+  if (e === 'no') {
+    position.display = 'none';
+    screenBlock.display = 'none';
+  } else if (e === 'yes') {
+    position.display = 'initial';
+    screenBlock.display = 'initial';
+  }
+}
 render();
 figDef();

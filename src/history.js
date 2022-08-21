@@ -1,47 +1,33 @@
 class History {
   historyArrayBlack = [];
   historyArrayWhite = [];
-  Add (type, fromId, toId) {
-    const element = getFigureById(fromId);
+  Add (type, fromFigure, toId, fromIdForProm) {
+    const figure = fromFigure;
+    let figType = figure.type[0].toUpperCase();
+    let pushValue;
 
-    const historyHolderBlack = document.getElementById('blackHistory');
-    historyHolderBlack.innerHTML = '';
-    const historyHolderWhite = document.getElementById('whiteHistory');
-    historyHolderWhite.innerHTML = '';
-
-    let figType = element.type[0].toUpperCase();
-
-    if (element.type === 'knight') {
+    if (figure.type === 'knight') {
       figType = 'N';
     }
-    if (historyHolderBlack.length > 35) {
-      historyHolderBlack.shift();
-    }
-    if (historyHolderWhite.length > 35) {
-      historyHolderWhite.shift();
-    }
-    let pushValue;
 
     switch (type) {
       case 'regular':
-        if (element.type !== 'pawn') {
+        if (figure.type !== 'pawn') {
           pushValue = figType + toId;
         } else {
           pushValue = toId;
         }
         break;
       case 'capture':
-        if (element.type !== 'pawn') {
+        if (figure.type !== 'pawn') {
           pushValue = figType + ':' + toId;
         } else {
-          pushValue = fromId[0] + ':' + toId;
+          if (fromIdForProm) {
+            pushValue = fromIdForProm[0] + ':' + toId;
+          } else {
+            pushValue = figure.id[0] + ':' + toId;
+          }
         }
-        break;
-      case 'capture-promotion':
-        pushValue = fromId[0] + ':' + toId + 'Q';
-        break;
-      case 'promotion':
-        pushValue = toId + 'Q';
         break;
       case 'castling-queen':
         pushValue = '0-0-0';
@@ -54,10 +40,45 @@ class History {
         break;
     }
 
-    const color = element.color;
+    const color = figure.color;
     if (color === 'white') {
       this.historyArrayWhite.push(pushValue);
     } else this.historyArrayBlack.push(pushValue);
+
+    this.Render();
+  }
+
+  AddPromotion (color, toId) { // No capture
+    const pushValue = toId + 'Q';
+
+    if (color === 'white') {
+      this.historyArrayWhite.push(pushValue);
+    } else this.historyArrayBlack.push(pushValue);
+    this.Render();
+  }
+  // COLOR + TO ID
+  // FROM ID + FROM COLOR + TO ID
+
+  AddPromotionCapture (fromId, color, toId) {
+    const pushValue = fromId[0] + ':' + toId + 'Q';
+    if (color === 'white') {
+      this.historyArrayWhite.push(pushValue);
+    } else this.historyArrayBlack.push(pushValue);
+    this.Render();
+  }
+
+  Render () {
+    const historyHolderBlack = document.getElementById('blackHistory');
+    historyHolderBlack.innerHTML = '';
+    const historyHolderWhite = document.getElementById('whiteHistory');
+    historyHolderWhite.innerHTML = '';
+
+    if (historyHolderBlack.length > 35) {
+      historyHolderBlack.shift();
+    }
+    if (historyHolderWhite.length > 35) {
+      historyHolderWhite.shift();
+    }
 
     this.historyArrayBlack.forEach(e => {
       const historyMove = document.createElement('div');

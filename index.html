@@ -28,6 +28,19 @@
       <button onclick="figureRemove('all')">Remove all figures</button>  
     </div>
     <div>
+      <div style="position: relative; margin-top: 15px;">
+        <div id="promotion" style="display: none; width: 100px; height: 100px; background-color: rgb(232, 255, 21); position: absolute; top: 10px; z-index: 200;">
+          <div style="text-align: center;">PROMOTION</div>
+          <div>
+            <div style ="position: absolute; bottom: 25px; left: 10px;">
+              <button id="yesButton" onclick="promotionResponse(event, 'yes')">Yes</button>
+            </div>
+            <div style ="position: absolute; bottom: 25px; right: 10px;">
+              <button id="noButton" onclick="promotionResponse(event, 'no')">No</button>
+            </div>
+          </div>
+      </div>
+      <div id="screenBlock" style="display: none; position: absolute; width: 850px; height: 850px; background-color: rgba(0, 0, 0, 0.319); margin-top: 10px;"></div>
       <canvas id="myCanvas" height="850px" width="850px" style=" display: inline-block; margin: 10px 0;"></canvas>
       <div style="display: inline-block; vertical-align: top;">
         <span id="turnCount" style="font-size: 30px;">White turn!</span> <br>
