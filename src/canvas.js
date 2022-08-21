@@ -27,7 +27,7 @@ function init () {
       ctx.fillStyle = 'black';
       ctx.font = '100px serif';
       ctx.textAlign = 'center';
-      ctx.fillText(figureUnicodes[element.type][element.color], 50 + element.x, 85 + element.y);
+      ctx.fillText(figureUnicodes[element.type][element.color], 75 + element.x * squareSize, 110 + element.y * squareSize);
     });
     ctx.restore();
   };
@@ -64,7 +64,9 @@ function init () {
 
   function fillSquare (x, y, color) {
     ctx.fillStyle = color;
-    ctx.fillRect(x, y, squareSize, squareSize);
+    if (x < 10 && y < 10) {
+      ctx.fillRect(25 + x * 100, 25 + y * 100, squareSize, squareSize);
+    } else ctx.fillRect(x, y, squareSize, squareSize);
   };
 
   function pixelsToNumber (xPx, yPx) {
@@ -92,6 +94,7 @@ function init () {
     pixelsToNumber,
     numberToPixels,
     addEventListener: (type, listener, options) => canvas.addEventListener(type, listener, options)
+
   };
 }
 
