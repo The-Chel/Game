@@ -27,7 +27,7 @@ function init () {
       ctx.fillStyle = 'black';
       ctx.font = '100px serif';
       ctx.textAlign = 'center';
-      ctx.fillText(figureUnicodes[element.type][element.color], 50 + element.x, 85 + element.y);
+      ctx.fillText(figureUnicodes[element.type][element.color], 75 + element.x * squareSize, 110 + element.y * squareSize);
     });
     ctx.restore();
   };
@@ -64,22 +64,22 @@ function init () {
 
   function fillSquare (x, y, color) {
     ctx.fillStyle = color;
-    ctx.fillRect(x, y, squareSize, squareSize);
+    ctx.fillRect(x * squareSize + 25, y * squareSize + 25, squareSize, squareSize);
   };
 
-  function pixelsToNumber (xPx, yPx) {
+  function pixelsToNumbers (xPx, yPx) {
     const x = xPx - 25;
     const y = yPx - 25;
-    const localX = Math.trunc(x / 100);
-    const localY = Math.trunc(y / 100);
+    const localX = Math.trunc(x / squareSize);
+    const localY = Math.trunc(y / squareSize);
     const returnArray = [localX, localY];
 
     return returnArray;
   }
 
   function numberToPixels (xN, yN) {
-    const x = xN * 100 + 25;
-    const y = yN * 100 + 35;
+    const x = xN * squareSize + 25;
+    const y = yN * squareSize + 35;
     const returnArray = [x, y];
     return returnArray;
   }
@@ -89,7 +89,7 @@ function init () {
     figuresDraw,
     createCheckBoard,
     fillSquare,
-    pixelsToNumber,
+    pixelsToNumbers,
     numberToPixels,
     addEventListener: (type, listener, options) => canvas.addEventListener(type, listener, options)
   };

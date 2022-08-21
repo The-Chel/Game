@@ -17,10 +17,10 @@ const numbers = [8, 7, 6, 5, 4, 3, 2, 1];
 let toButtonsOnPromotion = [false];
 
 // fills array 'boardSquare' with objects contining ID and location of square
-function giveId (i, a, incrI, incrA, color) {
+function giveId (i, a, color) {
   const id = '' + letters[i] + numbers[a];
-  const x = 25 + incrI;
-  const y = 25 + incrA;
+  const x = i;
+  const y = a;
   boardSquare[id] = ({ // canMove = false;
     id,
     x,
@@ -102,7 +102,7 @@ function figurePositionChange (toId, fromId) {
     }
 
     // History addition
-    if (check) history.Add(moveType, figureFrom, toId); // addHistory(moveType, fromId, toId);
+    if (check) history.Add(moveType, figureFrom, toId);
 
     // Actual move
     figureRemove(toId);
@@ -275,8 +275,6 @@ function turnChange () {
 }
 
 // VISUAL
-const square = 100; // 100px
-
 function render () { // erases the screen, updates visual inforamtion
   canva.clear();
   createCheckBoard();
@@ -288,11 +286,8 @@ function createCheckBoard () {
   let isBlack = true;
 
   for (let a = 0; a < 8; a++) {
-    const incrA = a * 100;
     let color = '';
     for (let i = 0; i < 8; i++) {
-      const incrI = i * 100;
-
       if (isBlack) {
         color = 'light';
       } else {
@@ -301,7 +296,7 @@ function createCheckBoard () {
 
       // Gives Ids only once on first draw, never changes Ids again
       if (IdsGiven < 64) {
-        giveId(i, a, incrI, incrA, color);
+        giveId(i, a, color);
         IdsGiven++;
       }
 
@@ -351,28 +346,28 @@ function movesDraw (id, direction, movingFigure, amountOfMoves, enPassant) {
 
     switch (direction) {
       case 'top':
-        localId = getSquareId((boardSquare[localId].x + 1), (boardSquare[localId].y - square + 1));
+        localId = getSquareId((boardSquare[localId].x), (boardSquare[localId].y - 1));
         break;
       case 'top-right':
-        localId = getSquareId((boardSquare[localId].x + square + 1), (boardSquare[localId].y - square + 1));
+        localId = getSquareId((boardSquare[localId].x + 1), (boardSquare[localId].y - 1));
         break;
       case 'right':
-        localId = getSquareId((boardSquare[localId].x + square + 1), (boardSquare[localId].y + 1));
+        localId = getSquareId((boardSquare[localId].x + 1), (boardSquare[localId].y));
         break;
       case 'bottom-right':
-        localId = getSquareId((boardSquare[localId].x + square + 1), (boardSquare[localId].y + square + 1));
+        localId = getSquareId((boardSquare[localId].x + 1), (boardSquare[localId].y + 1));
         break;
       case 'bottom':
-        localId = getSquareId((boardSquare[localId].x + 1), (boardSquare[localId].y + square + 1));
+        localId = getSquareId((boardSquare[localId].x), (boardSquare[localId].y + 1));
         break;
       case 'bottom-left':
-        localId = getSquareId((boardSquare[localId].x - square + 1), (boardSquare[localId].y + square + 1));
+        localId = getSquareId((boardSquare[localId].x - 1), (boardSquare[localId].y + 1));
         break;
       case 'left':
-        localId = getSquareId((boardSquare[localId].x - square + 1), (boardSquare[localId].y + 1));
+        localId = getSquareId((boardSquare[localId].x - 1), (boardSquare[localId].y));
         break;
       case 'top-left':
-        localId = getSquareId((boardSquare[localId].x - square + 1), (boardSquare[localId].y - square + 1));
+        localId = getSquareId((boardSquare[localId].x - 1), (boardSquare[localId].y - 1));
         break;
 
       default:
@@ -398,6 +393,7 @@ function onButtonFigureDraw () {
 
 function figDef () {
   figures = [];
+  // turn = 'white';
   // PAWNS
   for (let i = 0; i < 8; i++) {
     const idW = letters[i] + '2';
@@ -451,7 +447,7 @@ function getSquareId (xPx, yPx) {
       if (xPx === element.x && yPx === element.y) returnId = element.id;
     });
   } else {
-    const XYcoords = canva.pixelsToNumber(xPx, yPx);
+    const XYcoords = canva.pixelsToNumbers(xPx, yPx);
     const x = XYcoords[0];
     const y = XYcoords[1];
     Object.entries(boardSquare).forEach(entry => {
@@ -503,26 +499,36 @@ function highlightMove (id) {
     return;
   }
 
-  const topId = getSquareId((element.x + 1), (element.y - square + 1));
-  const rightId = getSquareId((element.x + square + 1), (element.y + 1));
-  const bottomId = getSquareId((element.x + 1), (element.y + square + 1));
-  const leftId = getSquareId((element.x - square + 1), (element.y + 1));
+  const topId = getSquareId((element.x), (element.y - 1));
+  const rightId = getSquareId((element.x + 1), (element.y));
+  const bottomId = getSquareId((element.x), (element.y + 1));
+  const leftId = getSquareId((element.x - 1), (element.y));
 
-  const topRightId = getSquareId((element.x + square + 1), (element.y - square + 1));
-  const bottomRightId = getSquareId((element.x + square + 1), (element.y + square + 1));
-  const bottomLeftId = getSquareId((element.x - square + 1), (element.y + square + 1));
-  const topLeftId = getSquareId((element.x - square + 1), (element.y - square + 1));
+  const topRightId = getSquareId((element.x + 1), (element.y - 1));
+  const bottomRightId = getSquareId((element.x + 1), (element.y + 1));
+  const bottomLeftId = getSquareId((element.x - 1), (element.y + 1));
+  const topLeftId = getSquareId((element.x - 1), (element.y - 1));
 
   // Knight's moves
+  let topRight;
+  let topLeft;
+  let rightTop;
+  let rightBottom;
+  let bottomRight;
+  let bottomLeft;
+  let leftTop;
+  let leftBottom;
 
-  const topRight = getSquareId((element.x + square + 1), (element.y - 2 * square + 1));
-  const topLeft = getSquareId((element.x - square + 1), (element.y - 2 * square + 1));
-  const rightTop = getSquareId((element.x + 2 * square + 1), (element.y - square + 1));
-  const rightBottom = getSquareId((element.x + 2 * square + 1), (element.y + square + 1));
-  const bottomRight = getSquareId((element.x + square + 1), (element.y + 2 * square + 1));
-  const bottomLeft = getSquareId((element.x - square + 1), (element.y + 2 * square + 1));
-  const leftTop = getSquareId((element.x - 2 * square + 1), (element.y - square + 1));
-  const leftBottom = getSquareId((element.x - 2 * square + 1), (element.y + square + 1));
+  if (element.type === 'knight') {
+    topRight = getSquareId((element.x + 1), (element.y - 2));
+    topLeft = getSquareId((element.x - 1), (element.y - 2));
+    rightTop = getSquareId((element.x + 2), (element.y - 1));
+    rightBottom = getSquareId((element.x + 2), (element.y + 1));
+    bottomRight = getSquareId((element.x + 1), (element.y + 2));
+    bottomLeft = getSquareId((element.x - 1), (element.y + 2));
+    leftTop = getSquareId((element.x - 2), (element.y - 1));
+    leftBottom = getSquareId((element.x - 2), (element.y + 1));
+  }
 
   switch (element.type) {
     case 'bishop':
@@ -580,14 +586,12 @@ function highlightMove (id) {
       if (element.castling) {
         if (element.color === 'white') {
           if (boardSquare.f1.isEmpty !== false && boardSquare.g1.isEmpty !== false && getFigureById('h1').castling) {
-            console.log('Castling Right is AVALIABLE');
             movesDraw('g1', '', element, 1);
           } else if (boardSquare.d1.isEmpty !== false && boardSquare.c1.isEmpty !== false && boardSquare.b1.isEmpty !== false && getFigureById('a1').castling) {
             movesDraw('c1', '', element, 1);
           }
         } else if (element.color === 'black') {
           if (boardSquare.f8.isEmpty !== false && boardSquare.g8.isEmpty !== false && getFigureById('h8').castling) {
-            console.log('Castling Right is AVALIABLE');
             movesDraw('g8', '', element, 1);
           } else if (boardSquare.d8.isEmpty !== false && boardSquare.c8.isEmpty !== false && boardSquare.b8.isEmpty !== false && getFigureById('a8').castling) {
             movesDraw('c8', '', element, 1);
@@ -617,7 +621,7 @@ function highlightMove (id) {
       }
       // diagonal attack
 
-      rightSquare = getSquareId((boardSquare[id].x + square + 1), (boardSquare[id].y + square * color + 1));
+      rightSquare = getSquareId((boardSquare[id].x + 1), (boardSquare[id].y + color));
       if (rightSquare) {
         if (boardSquare[rightSquare].isEmpty === false) {
           if (element.color === 'white') {
@@ -628,7 +632,7 @@ function highlightMove (id) {
         }
       }
 
-      leftSquare = getSquareId((boardSquare[id].x - square + 1), (boardSquare[id].y + square * color + 1));
+      leftSquare = getSquareId((boardSquare[id].x - 1), (boardSquare[id].y + color));
       if (leftSquare) {
         if (boardSquare[leftSquare].isEmpty === false) {
           if (element.color === 'white') {
