@@ -1,3 +1,3 @@
 # Game of Chess preview
 
-http://the-chel.github.io/game/
+https://the-chel.github.io/Game/
