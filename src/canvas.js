@@ -67,11 +67,30 @@ function init () {
     ctx.fillRect(x, y, squareSize, squareSize);
   };
 
+  function pixelsToNumber (xPx, yPx) {
+    const x = xPx - 25;
+    const y = yPx - 25;
+    const localX = Math.trunc(x / 100);
+    const localY = Math.trunc(y / 100);
+    const returnArray = [localX, localY];
+
+    return returnArray;
+  }
+
+  function numberToPixels (xN, yN) {
+    const x = xN * 100 + 25;
+    const y = yN * 100 + 35;
+    const returnArray = [x, y];
+    return returnArray;
+  }
+
   return {
     clear,
     figuresDraw,
     createCheckBoard,
     fillSquare,
+    pixelsToNumber,
+    numberToPixels,
     addEventListener: (type, listener, options) => canvas.addEventListener(type, listener, options)
   };
 }

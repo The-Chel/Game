@@ -1,4 +1,7 @@
 const canva = window.canvas;
+
+const history = window.chessHistory;
+
 // MODEL
 const boardSquare = {};
 let figures = [];
@@ -56,83 +59,6 @@ function figureAdd (id, color, type, specialFeature) {
   render();
 }
 
-class History {
-  historyArrayBlack = [];
-  historyArrayWhite = [];
-  Add (type, fromId, toId) {
-    const element = getFigureById(fromId);
-
-    const historyHolderBlack = document.getElementById('blackHistory');
-    historyHolderBlack.innerHTML = '';
-    const historyHolderWhite = document.getElementById('whiteHistory');
-    historyHolderWhite.innerHTML = '';
-
-    let figType = element.type[0].toUpperCase();
-
-    if (element.type === 'knight') {
-      figType = 'N';
-    }
-    if (historyHolderBlack.length > 35) {
-      historyHolderBlack.shift();
-    }
-    if (historyHolderWhite.length > 35) {
-      historyHolderWhite.shift();
-    }
-    let pushValue;
-
-    switch (type) {
-      case 'regular':
-        if (element.type !== 'pawn') {
-          pushValue = figType + toId;
-        } else {
-          pushValue = toId;
-        }
-        break;
-      case 'capture':
-        if (element.type !== 'pawn') {
-          pushValue = figType + ':' + toId;
-        } else {
-          pushValue = fromId[0] + ':' + toId;
-        }
-        break;
-      case 'capture-promotion':
-        pushValue = fromId[0] + ':' + toId + 'Q';
-        break;
-      case 'promotion':
-        pushValue = toId + 'Q';
-        break;
-      case 'castling-queen':
-        pushValue = '0-0-0';
-        break;
-      case 'castling-king':
-        pushValue = '0-0';
-        break;
-
-      default:
-        break;
-    }
-
-    const color = element.color;
-    if (color === 'white') {
-      this.historyArrayWhite.push(pushValue);
-    } else this.historyArrayBlack.push(pushValue);
-
-    this.historyArrayBlack.forEach(e => {
-      const historyMove = document.createElement('div');
-      historyMove.innerText = e;
-      historyMove.id = 'history';
-      historyHolderBlack.appendChild(historyMove);
-    });
-    this.historyArrayWhite.forEach(e => {
-      const historyMove = document.createElement('div');
-      historyMove.innerText = e;
-      historyMove.id = 'history';
-      historyHolderWhite.appendChild(historyMove);
-    });
-  }
-}
-const history = new History();
-
 function figurePositionChange (toId, fromId) {
   const figureTo = getFigureById(toId);
   toButtonsOnPromotion[0] = false;
@@ -142,19 +68,22 @@ function figurePositionChange (toId, fromId) {
 
     const figureFrom = getFigureById(fromId);
 
+    toButtonsOnPromotion = [false, figureFrom.color, fromId, toId]; // information for buttons
+
     let result;
     let check = true;
 
     let moveType = 'regular';
     if (toSquare.isEmpty === false) {
       moveType = 'capture';
+      toButtonsOnPromotion[0] = true;
     }
-    figureRemove(toId);
 
     // Spetial moves for Pawns
     if (figureFrom.type === 'pawn') {
       // Pawn to Queen
-      check = promotion(figureFrom, toId, check, fromId);
+
+      check = promotion(figureFrom, toId, check);
       // En Passan
       result = enPassant(fromId, toId, check); // BUG HERE
       // Pawn gets enPassant tag on double move and can be removed
@@ -173,9 +102,10 @@ function figurePositionChange (toId, fromId) {
     }
 
     // History addition
-    if (check) history.Add(moveType, fromId, toId); // addHistory(moveType, fromId, toId);
+    if (check) history.Add(moveType, figureFrom, toId); // addHistory(moveType, fromId, toId);
 
     // Actual move
+    figureRemove(toId);
     figureFrom.x = toSquare.x;
     figureFrom.y = toSquare.y;
     figureFrom.id = toSquare.id;
@@ -222,7 +152,7 @@ function enPassant (fromId, toId, check) {
       }
     }
     if (returnCheck) {
-      history.Add('capture', fromId, toId); // addHistory('capture', fromId, toId);
+      history.Add('capture', figureFrom, toId); // addHistory('capture', fromId, toId);
       returnCheck = false;
       returnValue[0] = returnCheck;
       returnValue.push(returnValue);
@@ -240,35 +170,42 @@ function enPassantRemove (moveThisTurn) {
     }
   });
 }
-function promotion (figureFrom, toId, checkFrom, fromId) {
+
+function promotion (figureFrom, toId, checkFrom) {
   let check = checkFrom;
-  toButtonsOnPromotion = [true, fromId, toId];
+
   if ((figureFrom.color === 'white' && toId[1] === '8') || (figureFrom.color === 'black' && toId[1] === '1')) {
-    if (boardSquare[toId].isEmpty === false) {
-      toButtonsOnPromotion[0] = true;
-      promQuest(toId);
-    } else {
-      promQuest(toId);
-    }
+    promQuest(toId);
     check = false;
   }
 
   return check;
 }
 
-function promotionYes(e) {
+// eslint-disable-next-line no-unused-vars
+function promotionResponse (e, type) {
   const button = e.target;
   const id = button.dataset.squareId;
   const figure = getFigureById(id);
-  const fromId = toButtonsOnPromotion[1];
-  const toId = toButtonsOnPromotion[2];
 
-  figure.type = 'queen';
-  if (toButtonsOnPromotion[0]) {
-    history.Add('capture-promotion', fromId, toId);
-  } else { history.Add('promotion', fromId, toId); }
+  const hasAttacked = toButtonsOnPromotion[0];
+  const fromColor = toButtonsOnPromotion[1];
+  const fromId = toButtonsOnPromotion[2];
+  const toId = toButtonsOnPromotion[3];
+
+  if (type === 'yes') {
+    figure.type = 'queen';
+    if (hasAttacked) {
+      history.AddPromotionCapture(fromId, fromColor, toId);
+    } else { history.AddPromotion(fromColor, toId); }
+  } else {
+    if (hasAttacked) {
+      history.Add('capture', figure, toId, fromId);
+    } else { history.Add('regular', figure, toId); }
+  }
 
   promTurn('no');
+  render();
 }
 
 function castlingKing (figureFrom, toId, checkFrom) {
@@ -278,24 +215,24 @@ function castlingKing (figureFrom, toId, checkFrom) {
     if (fromId === 'e1' && toId === 'g1') {
       castling('f1', 'h1');
 
-      history.Add('castling-king', figureFrom.id, figureFrom.id); // addHistory('castling-king', figureFrom.id, figureFrom.id);
+      history.Add('castling-king', figureFrom, figureFrom.id); // addHistory('castling-king', figureFrom.id, figureFrom.id);
       check = false;
     } else if (fromId === 'e1' && toId === 'c1') {
       castling('d1', 'a1');
 
-      history.Add('castling-queen', figureFrom.id, figureFrom.id); // addHistory('castling-queen', figureFrom.id, figureFrom.id);
+      history.Add('castling-queen', figureFrom, figureFrom.id); // addHistory('castling-queen', figureFrom.id, figureFrom.id);
       check = false;
     }
   } else if (figureFrom.color === 'black') {
     if (fromId === 'e8' && toId === 'g8') {
       castling('f8', 'h8');
 
-      history.Add('castling-king', figureFrom.id, figureFrom.id); // addHistory('castling-king', figureFrom.id, figureFrom.id);// 0-0-0
+      history.Add('castling-king', figureFrom, figureFrom.id); // addHistory('castling-king', figureFrom.id, figureFrom.id);// 0-0-0
       check = false;
     } else if (fromId === 'e8' && toId === 'c8') {
       castling('d8', 'a8');
 
-      history.Add('castling-queen', figureFrom.id, figureFrom.id); // addHistory('castling-queen', figureFrom.id, figureFrom.id); // 0-0
+      history.Add('castling-queen', figureFrom, figureFrom.id); // addHistory('castling-queen', figureFrom.id, figureFrom.id); // 0-0
       check = false;
     }
   }
@@ -397,7 +334,6 @@ function movesDraw (id, direction, movingFigure, amountOfMoves, enPassant) {
       index = 10;
       if (amountOfMoves === 2) return;
       canva.fillSquare(boardSquare[localId].x, boardSquare[localId].y, 'rgb(135, 135, 135)');
-      console.log('Figure on', direction);
       boardSquare[localId].canMove = true;
       return;
     } else if (boardSquare[localId].isEmpty === false) {
@@ -507,14 +443,22 @@ canva.addEventListener('click', (e) => {
 });
 
 // finds clicked square
-function getSquareId (x, y) {
+function getSquareId (xPx, yPx) {
   let returnId;
-  Object.entries(boardSquare).forEach(entry => {
-    const element = entry[1];
-    if (x > element.x && x < (element.x + 100) && y > element.y && y < (element.y + 100)) {
-      returnId = element.id;
-    }
-  });
+  if (xPx < 10 && yPx < 10) {
+    Object.entries(boardSquare).forEach(entry => {
+      const element = entry[1];
+      if (xPx === element.x && yPx === element.y) returnId = element.id;
+    });
+  } else {
+    const XYcoords = canva.pixelsToNumber(xPx, yPx);
+    const x = XYcoords[0];
+    const y = XYcoords[1];
+    Object.entries(boardSquare).forEach(entry => {
+      const element = entry[1];
+      if (x === element.x && y === element.y) returnId = element.id;
+    });
+  }
   return returnId;
 }
 
@@ -658,7 +602,8 @@ function highlightMove (id) {
       if ((element.id[1] === '2' && element.color === 'white') || (element.id[1] === '7' && element.color === 'black')) {
         moves = 2;
       }
-
+      if (!boardSquare[topId] && element.color === 'white') break;
+      if (!boardSquare[bottomId] && element.color === 'black') break;
       if (element.color === 'white') {
         color = -1;
         if (boardSquare[topId].isEmpty !== false) {
@@ -726,29 +671,34 @@ function getFigureById (id) {
   return returnElement;
 }
 
-render();
-figDef();
-//
 function promQuest (id) {
   if (!boardSquare[id]) return;
-  const x = boardSquare[id].x;
-  const y = boardSquare[id].y;
+  const pixCoords = canva.numberToPixels(boardSquare[id].x, boardSquare[id].y);
+  const x = pixCoords[0];
+  const y = pixCoords[1];
   const elemStyle = document.getElementById('promotion').style;
   const yesButton = document.getElementById('yesButton');
+  const noButton = document.getElementById('noButton');
 
   yesButton.dataset.squareId = id;
+  noButton.dataset.squareId = id;
 
   elemStyle.display = 'initial';
   elemStyle.left = x + 'px';
   elemStyle.top = y + 'px';
-  promTurn('on');
+  promTurn('yes');
 }
 
 function promTurn (e) {
   const position = document.getElementById('promotion').style;
+  const screenBlock = document.getElementById('screenBlock').style;
   if (e === 'no') {
     position.display = 'none';
+    screenBlock.display = 'none';
   } else if (e === 'yes') {
     position.display = 'initial';
+    screenBlock.display = 'initial';
   }
 }
+render();
+figDef();
