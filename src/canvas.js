@@ -64,7 +64,9 @@ function init () {
 
   function fillSquare (x, y, color) {
     ctx.fillStyle = color;
-    ctx.fillRect(x * squareSize + 25, y * squareSize + 25, squareSize, squareSize);
+    if (x < 10 && y < 10) {
+      ctx.fillRect(25 + x * 100, 25 + y * 100, squareSize, squareSize);
+    } else ctx.fillRect(x, y, squareSize, squareSize);
   };
 
   function pixelsToNumbers (xPx, yPx) {
@@ -92,6 +94,7 @@ function init () {
     pixelsToNumbers,
     numberToPixels,
     addEventListener: (type, listener, options) => canvas.addEventListener(type, listener, options)
+
   };
 }
 

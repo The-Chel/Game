@@ -21,15 +21,13 @@ function giveId (i, a, color) {
   const id = '' + letters[i] + numbers[a];
   const x = i;
   const y = a;
-  boardSquare[id] = ({ // canMove = false;
+  boardSquare[id] = ({
     id,
     x,
     y,
     color
   });
 }
-// for (let canMove in boardSquare) {}
-// delete boardSquare.canMove;
 
 function figureAdd (id, color, type, specialFeature) {
   let check = true;
@@ -62,6 +60,7 @@ function figureAdd (id, color, type, specialFeature) {
 function figurePositionChange (toId, fromId) {
   const figureTo = getFigureById(toId);
   toButtonsOnPromotion[0] = false;
+
   if (toId && fromId) { // goes here on figure's move
     const fromSquare = boardSquare[fromId];
     const toSquare = boardSquare[toId];
@@ -145,10 +144,8 @@ function enPassant (fromId, toId, check) {
     } else {
       removeId = toId[0] + (Number(toId[1]) + 1);
       if (!getFigureById(removeId)) return returnValue;
-      console.log('fifst');
       if (getFigureById(removeId).color !== 'black' && getFigureById(removeId).enPassant) {
         figureRemove(removeId);
-        console.log('second');
       }
     }
     if (returnCheck) {
@@ -275,6 +272,7 @@ function turnChange () {
 }
 
 // VISUAL
+
 function render () { // erases the screen, updates visual inforamtion
   canva.clear();
   createCheckBoard();
@@ -344,7 +342,7 @@ function movesDraw (id, direction, movingFigure, amountOfMoves, enPassant) {
       canva.fillSquare(boardSquare[localId].x, boardSquare[localId].y, 'rgb(155, 122, 44)');
     }
 
-    switch (direction) {
+    switch (direction) { // +1x goes to RIGHT, +1y goes to BOTTOM
       case 'top':
         localId = getSquareId((boardSquare[localId].x), (boardSquare[localId].y - 1));
         break;
@@ -426,11 +424,9 @@ function figDef () {
 
 canva.addEventListener('click', (e) => {
   const squareId = getSquareId(e.offsetX, e.offsetY);
-  console.log('first listener');
   if (!squareId) return;
   // if square isEmpty = false, then find figure on the square
   if (boardSquare[squareId].isEmpty === false && isFigurePicked === false) {
-    console.log('after listener');
     isFigurePicked = true;
     highlightMove(squareId);
     figureMove(squareId);
@@ -464,7 +460,6 @@ function figureMove (idIn) {
     isFigurePicked = false;
     return;
   }
-  console.log('fig move');
   canva.addEventListener('click', (e) => {
     const squareId = getSquareId(e.offsetX, e.offsetY);
 
