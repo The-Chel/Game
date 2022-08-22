@@ -67,6 +67,15 @@ class History {
     this.Render();
   }
 
+  ResetHistory () {
+    const historyHolderBlack = document.getElementById('blackHistory');
+    historyHolderBlack.innerHTML = '';
+    const historyHolderWhite = document.getElementById('whiteHistory');
+    historyHolderWhite.innerHTML = '';
+    this.historyArrayBlack = [];
+    this.historyArrayWhite = [];
+  }
+
   Render () {
     const historyHolderBlack = document.getElementById('blackHistory');
     historyHolderBlack.innerHTML = '';

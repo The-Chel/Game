@@ -261,13 +261,19 @@ function figureRemove (id) {
   render();
 }
 
-function turnChange () {
+function turnChange (color) {
+  const tunrCount = document.getElementById('turnCount');
+  if (color) {
+    turn = color;
+    tunrCount.innerText = turn + ' turn!';
+    return;
+  }
   if (turn === 'white') {
     turn = 'black';
   } else {
     turn = 'white';
   }
-  const tunrCount = document.getElementById('turnCount');
+
   tunrCount.innerText = turn + ' turn!';
 }
 
@@ -305,7 +311,6 @@ function createCheckBoard () {
 
   Object.entries(boardSquare).forEach(entry => {
     delete entry[1].canMove;
-    if (entry[1].isEmpty) delete entry[1].isEmpty;
   });
 }
 
@@ -391,7 +396,13 @@ function onButtonFigureDraw () {
 
 function figDef () {
   figures = [];
-  // turn = 'white';
+  history.ResetHistory();
+  turnChange('white');
+  Object.entries(boardSquare).forEach(entry => {
+    delete entry[1].canMove;
+    if (entry[1].isEmpty) delete entry[1].isEmpty;
+  });
+
   // PAWNS
   for (let i = 0; i < 8; i++) {
     const idW = letters[i] + '2';
