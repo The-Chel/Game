@@ -73,7 +73,7 @@ function figurePositionChange (toId, fromId) {
     let check = true;
 
     let moveType = 'regular';
-    if (toSquare.isEmpty === false) {
+    if (toSquare.occupied) {
       moveType = 'capture';
       toButtonsOnPromotion[0] = true;
     }
@@ -108,12 +108,12 @@ function figurePositionChange (toId, fromId) {
     figureFrom.x = toSquare.x;
     figureFrom.y = toSquare.y;
     figureFrom.id = toSquare.id;
-    toSquare.isEmpty = false;
-    delete fromSquare.isEmpty;
+    toSquare.occupied = true;
+    delete fromSquare.occupied;
 
     turnChange();
   } else if (toId) { // goes here only on figure's creation
-    boardSquare[toId].isEmpty = false;
+    boardSquare[toId].occupied = true;
     figureTo.x = boardSquare[toId].x;
     figureTo.y = boardSquare[toId].y;
   }
@@ -242,18 +242,18 @@ function castling (toId, fromId) {
   figure.x = square.x;
   figure.y = square.y;
   figure.id = square.id;
-  square.isEmpty = false;
-  delete boardSquare[fromId].isEmpty;
+  square.occupied = true;
+  delete boardSquare[fromId].occupied;
 }
 
 function figureRemove (id) {
   if (id === 'all') {
     figures = [];
-    Object.entries(boardSquare).forEach(entry => delete entry[1].isEmpty);
+    Object.entries(boardSquare).forEach(entry => delete entry[1].occupied);
   }
   figures = figures.filter((element) => {
     if (id === element.id) {
-      delete boardSquare[id].isEmpty;
+      delete boardSquare[id].occupied;
       return false;
     } else { return true; }
   });
@@ -328,13 +328,13 @@ function movesDraw (id, direction, movingFigure, amountOfMoves, enPassant) {
     if (!localId) return;
     if (getFigureById(localId)) toFigureColor = getFigureById(localId).color;
 
-    if (enPassant || (boardSquare[localId].isEmpty === false && toFigureColor !== fromFigureColor)) {
+    if (enPassant || (boardSquare[localId].occupied && toFigureColor !== fromFigureColor)) {
       index = 10;
       if (amountOfMoves === 2) return;
       canva.fillSquare(boardSquare[localId].x, boardSquare[localId].y, 'rgb(135, 135, 135)');
       boardSquare[localId].canMove = true;
       return;
-    } else if (boardSquare[localId].isEmpty === false) {
+    } else if (boardSquare[localId].occupied) {
       return;
     }
 
@@ -400,7 +400,7 @@ function figDef () {
   turnChange('white');
   Object.entries(boardSquare).forEach(entry => {
     delete entry[1].canMove;
-    if (entry[1].isEmpty) delete entry[1].isEmpty;
+    if (entry[1].occupied) delete entry[1].occupied;
   });
 
   // PAWNS
@@ -436,8 +436,8 @@ function figDef () {
 canva.addEventListener('click', (e) => {
   const squareId = getSquareId(e.offsetX, e.offsetY);
   if (!squareId) return;
-  // if square isEmpty = false, then find figure on the square
-  if (boardSquare[squareId].isEmpty === false && isFigurePicked === false) {
+  // if square occupied, then find figure on the square
+  if (boardSquare[squareId].occupied && isFigurePicked === false) {
     isFigurePicked = true;
     highlightMove(squareId);
     figureMove(squareId);
@@ -591,15 +591,15 @@ function highlightMove (id) {
       // Castling
       if (element.castling) {
         if (element.color === 'white') {
-          if (boardSquare.f1.isEmpty !== false && boardSquare.g1.isEmpty !== false && getFigureById('h1').castling) {
+          if (!boardSquare.f1.occupied && !boardSquare.g1.occupied && getFigureById('h1').castling) {
             movesDraw('g1', '', element, 1);
-          } else if (boardSquare.d1.isEmpty !== false && boardSquare.c1.isEmpty !== false && boardSquare.b1.isEmpty !== false && getFigureById('a1').castling) {
+          } else if (!boardSquare.d1.occupied && !boardSquare.c1.occupied && !boardSquare.b1.occupied && getFigureById('a1').castling) {
             movesDraw('c1', '', element, 1);
           }
         } else if (element.color === 'black') {
-          if (boardSquare.f8.isEmpty !== false && boardSquare.g8.isEmpty !== false && getFigureById('h8').castling) {
+          if (!boardSquare.f8.occupied && !boardSquare.g8.occupied && getFigureById('h8').castling) {
             movesDraw('g8', '', element, 1);
-          } else if (boardSquare.d8.isEmpty !== false && boardSquare.c8.isEmpty !== false && boardSquare.b8.isEmpty !== false && getFigureById('a8').castling) {
+          } else if (!boardSquare.d8.occupied && !boardSquare.c8.occupied && !boardSquare.b8.occupied && getFigureById('a8').castling) {
             movesDraw('c8', '', element, 1);
           }
         }
@@ -616,12 +616,12 @@ function highlightMove (id) {
       if (!boardSquare[bottomId] && element.color === 'black') break;
       if (element.color === 'white') {
         color = -1;
-        if (boardSquare[topId].isEmpty !== false) {
+        if (!boardSquare[topId].occupied) {
           movesDraw(topId, 'top', element, moves);
         }
       } else if (element.color === 'black') {
         color = 1;
-        if (boardSquare[bottomId].isEmpty !== false) {
+        if (!boardSquare[bottomId].occupied) {
           movesDraw(bottomId, 'bottom', element, moves);
         }
       }
@@ -629,7 +629,7 @@ function highlightMove (id) {
 
       rightSquare = getSquareId((boardSquare[id].x + 1), (boardSquare[id].y + color));
       if (rightSquare) {
-        if (boardSquare[rightSquare].isEmpty === false) {
+        if (boardSquare[rightSquare].occupied) {
           if (element.color === 'white') {
             movesDraw(rightSquare, 'top-right', element, 1);
           } else {
@@ -640,7 +640,7 @@ function highlightMove (id) {
 
       leftSquare = getSquareId((boardSquare[id].x - 1), (boardSquare[id].y + color));
       if (leftSquare) {
-        if (boardSquare[leftSquare].isEmpty === false) {
+        if (boardSquare[leftSquare].occupied) {
           if (element.color === 'white') {
             movesDraw(leftSquare, 'top-left', element, 1);
           } else {
@@ -650,14 +650,14 @@ function highlightMove (id) {
       }
       // En Pasant
       if (rightId) {
-        if (boardSquare[rightId].isEmpty === false && getFigureById(rightId).enPassant === true) {
+        if (boardSquare[rightId].occupied && getFigureById(rightId).enPassant === true) {
           if (element.color === 'white') {
             movesDraw(topRightId, 'top-right', element, 1, true);
           } else movesDraw(bottomRightId, 'bottom-right', element, 1, true);
         }
       }
       if (leftId) {
-        if (boardSquare[leftId].isEmpty === false && getFigureById(leftId).enPassant === true) {
+        if (boardSquare[leftId].occupied && getFigureById(leftId).enPassant === true) {
           if (element.color === 'white') {
             movesDraw(topLeftId, 'top-left', element, 1, true);
           } else movesDraw(bottomLeftId, 'bottom-left', element, 1, true);
