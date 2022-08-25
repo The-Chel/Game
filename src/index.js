@@ -85,7 +85,7 @@ function figurePositionChange (toId, fromId) {
 
       check = promotion(figureFrom, toId);
       // En Passan
-      check = enPassant(fromId, toId); // BUG HERE
+      check = enPassant(fromId, toId);
       // Pawn gets enPassant tag on double move and can be removed
     }
 
@@ -139,7 +139,6 @@ function enPassant (fromId, toId) {
   if (moveDistance > 1) { // Adds flag
     figureFrom.enPassant = true;
     enPassantStorage.push(figureFrom);
-    console.log('Double move');
     return true;
   }
 
@@ -168,7 +167,6 @@ function enPassant (fromId, toId) {
 function promotion (figureFrom, toId) {
   if ((figureFrom.color === 'white' && toId[1] === '8') || (figureFrom.color === 'black' && toId[1] === '1')) {
     promQuest(toId);
-    console.log('prom');
     return false;
   }
 }
