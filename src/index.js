@@ -14,6 +14,8 @@ let turn = 'white'; // white or black
 const letters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
 const numbers = [8, 7, 6, 5, 4, 3, 2, 1];
 
+const enPassantStorage = []; // Can hold up to 2 figures
+
 let toButtonsOnPromotion = [false];
 
 // fills array 'boardSquare' with objects contining ID and location of square
@@ -69,7 +71,6 @@ function figurePositionChange (toId, fromId) {
 
     toButtonsOnPromotion = [false, figureFrom.color, fromId, toId]; // information for buttons
 
-    let result;
     let check = true;
 
     let moveType = 'regular';
@@ -82,14 +83,20 @@ function figurePositionChange (toId, fromId) {
     if (figureFrom.type === 'pawn') {
       // Pawn to Queen
 
-      check = promotion(figureFrom, toId, check);
+      check = promotion(figureFrom, toId);
       // En Passan
-      result = enPassant(fromId, toId, check); // BUG HERE
+      check = enPassant(fromId, toId);
       // Pawn gets enPassant tag on double move and can be removed
-      check = result[0];
     }
-    if (result) enPassantRemove(result[1]);
-    else enPassantRemove(); // Need to figure out what to do with enPasant flag
+
+    // Removes EnPassant flag
+    if (figureFrom !== enPassantStorage[0] && enPassantStorage[0]) {
+      const id = enPassantStorage[0].id;
+      figures.forEach(e => {
+        if (e.id === id) delete e.enPassant;
+      });
+      enPassantStorage.shift();
+    }
 
     // CASTLING
     if (figureFrom.type === 'rook') {
@@ -97,7 +104,7 @@ function figurePositionChange (toId, fromId) {
     }
     if (figureFrom.type === 'king') {
       delete figureFrom.castling;
-      check = castlingKing(figureFrom, toId, check);
+      check = castlingKing(figureFrom, toId);
     }
 
     // History addition
@@ -120,63 +127,48 @@ function figurePositionChange (toId, fromId) {
   render();
 }
 
-function enPassant (fromId, toId, check) {
+function enPassant (fromId, toId) {
+  // Does 2 things
+  // 1. Adds EnPassant flag on pawn moved 2 squares
+  // 2. Removes captured figure on EnPassant move
+
   const figureFrom = getFigureById(fromId);
   const moveDistance = Math.abs((Number(fromId[1]) - Number(toId[1])));
-  const returnValue = [];
   let removeId;
-  let returnCheck = check;
-  returnValue[0] = returnCheck;
 
-  if (moveDistance > 1) {
+  if (moveDistance > 1) { // Adds flag
     figureFrom.enPassant = true;
-    returnValue[1] = true;
-    return returnValue;
+    enPassantStorage.push(figureFrom);
+    return true;
   }
 
-  if (fromId[0] !== toId[0]) {
+  if (fromId[0] !== toId[0]) { // Removes figure
     if (figureFrom.color === 'white') {
       removeId = toId[0] + (Number(toId[1]) - 1);
-      if (!getFigureById(removeId)) return returnValue;
+      if (!getFigureById(removeId)) return true;
       if (getFigureById(removeId).color !== 'white' && getFigureById(removeId).enPassant) {
         figureRemove(removeId);
       }
     } else {
       removeId = toId[0] + (Number(toId[1]) + 1);
-      if (!getFigureById(removeId)) return returnValue;
+      if (!getFigureById(removeId)) return true;
       if (getFigureById(removeId).color !== 'black' && getFigureById(removeId).enPassant) {
         figureRemove(removeId);
       }
     }
-    if (returnCheck) {
-      history.Add('capture', figureFrom, toId); // addHistory('capture', fromId, toId);
-      returnCheck = false;
-      returnValue[0] = returnCheck;
-      returnValue.push(returnValue);
-    }
+
+    history.Add('capture', figureFrom, toId); // addHistory('capture', fromId, toId);
+    return false;
   }
 
-  return returnValue;
+  return true;
 }
 
-function enPassantRemove (moveThisTurn) {
-  if (moveThisTurn) return;
-  figures.forEach(element => {
-    if (element.type === 'pawn' && element.enPassant) {
-      delete element.enPassant;
-    }
-  });
-}
-
-function promotion (figureFrom, toId, checkFrom) {
-  let check = checkFrom;
-
+function promotion (figureFrom, toId) {
   if ((figureFrom.color === 'white' && toId[1] === '8') || (figureFrom.color === 'black' && toId[1] === '1')) {
     promQuest(toId);
-    check = false;
+    return false;
   }
-
-  return check;
 }
 
 // eslint-disable-next-line no-unused-vars
@@ -205,8 +197,8 @@ function promotionResponse (e, type) {
   render();
 }
 
-function castlingKing (figureFrom, toId, checkFrom) {
-  let check = checkFrom;
+function castlingKing (figureFrom, toId) {
+  let check = true;
   const fromId = figureFrom.id;
   if (figureFrom.color === 'white') {
     if (fromId === 'e1' && toId === 'g1') {
@@ -318,6 +310,11 @@ function movesDraw (id, direction, movingFigure, amountOfMoves, enPassant) {
   let localId = id;
   let index = 0;
   let toFigureColor;
+
+  if (!direction) {
+    canva.fillSquare(boardSquare[localId].x, boardSquare[localId].y, 'rgb(159, 227, 159)');
+    return;
+  }
 
   const fromFigureColor = movingFigure.color;
   if (amountOfMoves) {
@@ -448,20 +445,19 @@ canva.addEventListener('click', (e) => {
 // finds clicked square
 function getSquareId (xPx, yPx) {
   let returnId;
-  if (xPx < 10 && yPx < 10) {
-    Object.entries(boardSquare).forEach(entry => {
-      const element = entry[1];
-      if (xPx === element.x && yPx === element.y) returnId = element.id;
-    });
-  } else {
+  let x = xPx;
+  let y = yPx;
+  if (x > 10 && y > 10) {
     const XYcoords = canva.pixelsToNumbers(xPx, yPx);
-    const x = XYcoords[0];
-    const y = XYcoords[1];
-    Object.entries(boardSquare).forEach(entry => {
-      const element = entry[1];
-      if (x === element.x && y === element.y) returnId = element.id;
-    });
+    x = XYcoords[0];
+    y = XYcoords[1];
   }
+
+  Object.entries(boardSquare).forEach(entry => {
+    const element = entry[1];
+    if (x === element.x && y === element.y) returnId = element.id;
+  });
+
   return returnId;
 }
 
@@ -489,31 +485,37 @@ function figureMove (idIn) {
 }
 
 function highlightMove (id) {
-  //  first half of render() to redraw board with no figures
+  //  First half of render() to redraw board with no figures
   canva.clear();
   canva.createCheckBoard();
 
-  let moves = 1;
-  let color;
-  let rightSquare;
-  let leftSquare;
-
+  // Clicked figure's data
   const element = getFigureById(id);
   const elementColor = element.color;
+  const x = element.x;
+  const y = element.y;
   if (elementColor !== turn) {
     canva.figuresDraw(figures);
     return;
   }
 
-  const topId = getSquareId((element.x), (element.y - 1));
-  const rightId = getSquareId((element.x + 1), (element.y));
-  const bottomId = getSquareId((element.x), (element.y + 1));
-  const leftId = getSquareId((element.x - 1), (element.y));
+  // Varaibles for Pawns
+  let moves = 1;
+  let color;
+  let rightSquare;
+  let leftSquare;
 
-  const topRightId = getSquareId((element.x + 1), (element.y - 1));
-  const bottomRightId = getSquareId((element.x + 1), (element.y + 1));
-  const bottomLeftId = getSquareId((element.x - 1), (element.y + 1));
-  const topLeftId = getSquareId((element.x - 1), (element.y - 1));
+  movesDraw(id); // Highlights active figure
+
+  const topId = getSquareId(x, (y - 1));
+  const rightId = getSquareId((x + 1), y);
+  const bottomId = getSquareId(x, (y + 1));
+  const leftId = getSquareId((x - 1), y);
+
+  const topRightId = getSquareId((x + 1), (y - 1));
+  const bottomRightId = getSquareId((x + 1), (y + 1));
+  const bottomLeftId = getSquareId((x - 1), (y + 1));
+  const topLeftId = getSquareId((x - 1), (y - 1));
 
   // Knight's moves
   let topRight;
@@ -525,17 +527,6 @@ function highlightMove (id) {
   let leftTop;
   let leftBottom;
 
-  if (element.type === 'knight') {
-    topRight = getSquareId((element.x + 1), (element.y - 2));
-    topLeft = getSquareId((element.x - 1), (element.y - 2));
-    rightTop = getSquareId((element.x + 2), (element.y - 1));
-    rightBottom = getSquareId((element.x + 2), (element.y + 1));
-    bottomRight = getSquareId((element.x + 1), (element.y + 2));
-    bottomLeft = getSquareId((element.x - 1), (element.y + 2));
-    leftTop = getSquareId((element.x - 2), (element.y - 1));
-    leftBottom = getSquareId((element.x - 2), (element.y + 1));
-  }
-
   switch (element.type) {
     case 'bishop':
 
@@ -545,6 +536,15 @@ function highlightMove (id) {
       movesDraw(topLeftId, 'top-left', element);
       break;
     case 'knight':
+
+      topRight = getSquareId((x + 1), (y - 2));
+      topLeft = getSquareId((x - 1), (y - 2));
+      rightTop = getSquareId((x + 2), (y - 1));
+      rightBottom = getSquareId((x + 2), (y + 1));
+      bottomRight = getSquareId((x + 1), (y + 2));
+      bottomLeft = getSquareId((x - 1), (y + 2));
+      leftTop = getSquareId((x - 2), (y - 1));
+      leftBottom = getSquareId((x - 2), (y + 1));
 
       movesDraw(topRight, 'top-right', element, 1);
       movesDraw(topLeft, 'top-left', element, 1);
@@ -607,13 +607,13 @@ function highlightMove (id) {
 
       break;
 
-    default:
+    default: // Pawn Moves
       // First double move
       if ((element.id[1] === '2' && element.color === 'white') || (element.id[1] === '7' && element.color === 'black')) {
         moves = 2;
       }
-      if (!boardSquare[topId] && element.color === 'white') break;
-      if (!boardSquare[bottomId] && element.color === 'black') break;
+      if (!boardSquare[topId] && element.color === 'white') break; // Pawn at the edge of the board
+      if (!boardSquare[bottomId] && element.color === 'black') break; // Pawn at the edge of the board
       if (element.color === 'white') {
         color = -1;
         if (!boardSquare[topId].occupied) {
@@ -625,8 +625,8 @@ function highlightMove (id) {
           movesDraw(bottomId, 'bottom', element, moves);
         }
       }
-      // diagonal attack
 
+      // Diagonal attack
       rightSquare = getSquareId((boardSquare[id].x + 1), (boardSquare[id].y + color));
       if (rightSquare) {
         if (boardSquare[rightSquare].occupied) {
@@ -667,7 +667,7 @@ function highlightMove (id) {
       break;
   }
 
-  // second pard of render() for figures only
+  // Second pard of render() for figures only
   canva.figuresDraw(figures);
 }
 
