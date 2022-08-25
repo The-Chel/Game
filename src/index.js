@@ -89,7 +89,7 @@ function figurePositionChange (toId, fromId) {
       check = result[0];
     }
     if (result) enPassantRemove(result[1]);
-    else enPassantRemove(); // Need to figure out what to do with enPasant flag
+    else enPassantRemove(); // Need to figure out what to do with enPassant flag
 
     // CASTLING
     if (figureFrom.type === 'rook') {
@@ -121,6 +121,10 @@ function figurePositionChange (toId, fromId) {
 }
 
 function enPassant (fromId, toId, check) {
+  // Does 2 things
+  // 1. Adds EnPassant flag on pawn moved 2 squares
+  // 2. Removes captured figure on EnPassant move
+
   const figureFrom = getFigureById(fromId);
   const moveDistance = Math.abs((Number(fromId[1]) - Number(toId[1])));
   const returnValue = [];
@@ -128,13 +132,13 @@ function enPassant (fromId, toId, check) {
   let returnCheck = check;
   returnValue[0] = returnCheck;
 
-  if (moveDistance > 1) {
+  if (moveDistance > 1) { // Adds flag
     figureFrom.enPassant = true;
     returnValue[1] = true;
     return returnValue;
   }
 
-  if (fromId[0] !== toId[0]) {
+  if (fromId[0] !== toId[0]) { // Removes figure
     if (figureFrom.color === 'white') {
       removeId = toId[0] + (Number(toId[1]) - 1);
       if (!getFigureById(removeId)) return returnValue;
@@ -319,6 +323,11 @@ function movesDraw (id, direction, movingFigure, amountOfMoves, enPassant) {
   let index = 0;
   let toFigureColor;
 
+  if (!direction) {
+    canva.fillSquare(boardSquare[localId].x, boardSquare[localId].y, 'rgb(159, 227, 159)');
+    return;
+  }
+
   const fromFigureColor = movingFigure.color;
   if (amountOfMoves) {
     index = 8 - amountOfMoves;
@@ -489,31 +498,37 @@ function figureMove (idIn) {
 }
 
 function highlightMove (id) {
-  //  first half of render() to redraw board with no figures
+  //  First half of render() to redraw board with no figures
   canva.clear();
   canva.createCheckBoard();
 
+  // Varaibles for Pawns
   let moves = 1;
   let color;
   let rightSquare;
   let leftSquare;
 
+  // Clicked figure's data
   const element = getFigureById(id);
   const elementColor = element.color;
+  const x = element.x;
+  const y = element.y;
   if (elementColor !== turn) {
     canva.figuresDraw(figures);
     return;
   }
 
-  const topId = getSquareId((element.x), (element.y - 1));
-  const rightId = getSquareId((element.x + 1), (element.y));
-  const bottomId = getSquareId((element.x), (element.y + 1));
-  const leftId = getSquareId((element.x - 1), (element.y));
+  movesDraw(id);
 
-  const topRightId = getSquareId((element.x + 1), (element.y - 1));
-  const bottomRightId = getSquareId((element.x + 1), (element.y + 1));
-  const bottomLeftId = getSquareId((element.x - 1), (element.y + 1));
-  const topLeftId = getSquareId((element.x - 1), (element.y - 1));
+  const topId = getSquareId(x, (y - 1));
+  const rightId = getSquareId((x + 1), y);
+  const bottomId = getSquareId(x, (y + 1));
+  const leftId = getSquareId((x - 1), y);
+
+  const topRightId = getSquareId((x + 1), (y - 1));
+  const bottomRightId = getSquareId((x + 1), (y + 1));
+  const bottomLeftId = getSquareId((x - 1), (y + 1));
+  const topLeftId = getSquareId((x - 1), (y - 1));
 
   // Knight's moves
   let topRight;
@@ -526,14 +541,14 @@ function highlightMove (id) {
   let leftBottom;
 
   if (element.type === 'knight') {
-    topRight = getSquareId((element.x + 1), (element.y - 2));
-    topLeft = getSquareId((element.x - 1), (element.y - 2));
-    rightTop = getSquareId((element.x + 2), (element.y - 1));
-    rightBottom = getSquareId((element.x + 2), (element.y + 1));
-    bottomRight = getSquareId((element.x + 1), (element.y + 2));
-    bottomLeft = getSquareId((element.x - 1), (element.y + 2));
-    leftTop = getSquareId((element.x - 2), (element.y - 1));
-    leftBottom = getSquareId((element.x - 2), (element.y + 1));
+    topRight = getSquareId((x + 1), (y - 2));
+    topLeft = getSquareId((x - 1), (y - 2));
+    rightTop = getSquareId((x + 2), (y - 1));
+    rightBottom = getSquareId((x + 2), (y + 1));
+    bottomRight = getSquareId((x + 1), (y + 2));
+    bottomLeft = getSquareId((x - 1), (y + 2));
+    leftTop = getSquareId((x - 2), (y - 1));
+    leftBottom = getSquareId((x - 2), (y + 1));
   }
 
   switch (element.type) {
