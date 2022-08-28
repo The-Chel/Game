@@ -17,6 +17,8 @@ function init () {
   const letters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
   const numbers = [8, 7, 6, 5, 4, 3, 2, 1];
 
+  let IdsGiven = 0;
+
   function clear () {
     ctx.clearRect(0, 0, canvas.width, canvas.height); // deletes evrything
   };
@@ -47,11 +49,18 @@ function init () {
 
       for (let i = 0; i < 8; i++) {
         const incrI = i * squareSize;
-
+        let color;
         if (isBlack) {
           ctx.fillStyle = 'rgb(209, 173, 90)';
+          color = 'light';
         } else {
           ctx.fillStyle = 'rgb(94, 57, 19)';
+          color = 'brown';
+        }
+
+        if (IdsGiven < 64) {
+          giveId(i, a, color);
+          IdsGiven++;
         }
 
         ctx.fillRect(25 + incrI, 25 + incrA, squareSize, squareSize);
@@ -60,6 +69,22 @@ function init () {
       }
       isBlack = !isBlack;
     }
+    Object.entries(gameState.boardSquare).forEach(entry => {
+      delete entry[1].canMove;
+    });
+  }
+
+  // fills array 'boardSquare' with objects contining ID and location of square
+  function giveId (i, a, color) {
+    const id = '' + letters[i] + numbers[a];
+    const x = i;
+    const y = a;
+    gameState.boardSquare[id] = ({
+      id,
+      x,
+      y,
+      color
+    });
   }
 
   function fillSquare (x, y, color) {
@@ -93,7 +118,8 @@ function init () {
     fillSquare,
     pixelsToNumbers,
     numberToPixels,
-    addEventListener: (type, listener, options) => canvas.addEventListener(type, listener, options)
+    addEventListener: (type, listener, options) => canvas.addEventListener(type, listener, options),
+    letters
 
   };
 }

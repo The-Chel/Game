@@ -1,3 +1,6 @@
+// Next steps:
+// 1. Make a function to make squares avaliable to move;
+// 2. Make a function to find all avaliable moves;
 const canva = window.canvas;
 
 const history = window.chessHistory;
@@ -180,7 +183,6 @@ function turnChange (color) {
 }
 
 function calculateMoves() {
-
   gameState.figures.forEach(e => {
     makeMove(e.id);
   });
