@@ -65,12 +65,10 @@ function makeCheck () {
   // Finds king under attack
   Object.entries(kings).forEach(e => {
     const king = e[1];
-    delete e[1].check;
     if (gameState.boardSquare[king.id].canMove) {
       gameState.check = true;
       gameState.boardSquare[king.id].check = true;
       returnVal = e[1];
-      console.log('biba');
     }
   });
   if (returnVal) {
@@ -147,7 +145,7 @@ function figurePositionChange (toId, fromId) {
     figureTo.x = gameState.boardSquare[toId].x;
     figureTo.y = gameState.boardSquare[toId].y;
   }
-  calculateMoves();
+  calculateMoves(gameState);
   makeCheck(); // Render is in theis function
 }
 
@@ -220,14 +218,14 @@ function turnChange (color) {
   tunrCount.innerText = gameState.currentTurn + ' turn!';
 }
 
-function calculateMoves () {
-  gameState.arrayOfMoves = [];
-  gameState.figures.forEach(e => {
+function calculateMoves (state) {
+  state.arrayOfMoves = [];
+  state.figures.forEach(e => {
     makeMove(e.id);
   });
 
-  Object.entries(gameState.boardSquare).forEach(entry => {
-    if (entry[1].canMove) gameState.arrayOfMoves.push(entry[1].id);
+  Object.entries(state.boardSquare).forEach(entry => {
+    if (entry[1].canMove) state.arrayOfMoves.push(entry[1].id);
   });
 }
 
