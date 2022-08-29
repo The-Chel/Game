@@ -57,11 +57,20 @@ function init () {
           ctx.fillStyle = 'rgb(94, 57, 19)';
           color = 'brown';
         }
-
         if (IdsGiven < 64) {
           giveId(i, a, color);
           IdsGiven++;
         }
+        if (IdsGiven === 64) {
+          const squareId = letters[i] + numbers[a];
+          if (gameState.boardSquare[squareId]) {
+            if (gameState.boardSquare[squareId].check) {
+              ctx.fillStyle = 'red';
+              color = 'brown';
+            }
+          }
+        }
+
 
         ctx.fillRect(25 + incrI, 25 + incrA, squareSize, squareSize);
 

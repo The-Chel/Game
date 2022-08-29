@@ -11,7 +11,8 @@ const gameState = {
   figures: [],
   currentTurn: 'white',
   enPassantStorage: [], // Can hold up to 2 figures
-  arrayOfMoves: []
+  arrayOfMoves: [],
+  check: false
 };
 
 let isFigurePicked = false;
@@ -44,6 +45,38 @@ function figureAdd (id, color, type, specialFeature) {
 
   figurePositionChange(id);
   render();
+}
+
+function makeCheck () {
+  let returnVal;
+  Object.entries(gameState.boardSquare).forEach(e => {
+    if (e[1].check) delete e[1].check;
+  });
+
+  // Find kings
+  const kings = {};
+  gameState.figures.forEach(e => {
+    if (e.type === 'king') {
+      if (e.color === 'white') kings.white = e;
+      else kings.black = e;
+    }
+  });
+
+  // Finds king under attack
+  Object.entries(kings).forEach(e => {
+    const king = e[1];
+    if (gameState.boardSquare[king.id].canMove) {
+      gameState.check = true;
+      gameState.boardSquare[king.id].check = true;
+      returnVal = e[1];
+    }
+  });
+  if (returnVal) {
+    return returnVal;
+  } else {
+    gameState.check = false;
+    return kings;
+  }
 }
 
 function figurePositionChange (toId, fromId) {
@@ -104,14 +137,16 @@ function figurePositionChange (toId, fromId) {
     figureFrom.id = toSquare.id;
     toSquare.occupied = true;
     delete fromSquare.occupied;
-
     turnChange();
-  } else if (toId) { // goes here only on figure's creation
+  }
+
+  if (!fromId) { // goes here only on figure's creation
     gameState.boardSquare[toId].occupied = true;
     figureTo.x = gameState.boardSquare[toId].x;
     figureTo.y = gameState.boardSquare[toId].y;
   }
-  render();
+  calculateMoves(gameState);
+  makeCheck(); // Render is in theis function
 }
 
 function enPassant (fromId, toId) {
@@ -155,6 +190,7 @@ function figureRemove (id) {
   if (id === 'all') {
     gameState.figures = [];
     Object.entries(gameState.boardSquare).forEach(entry => delete entry[1].occupied);
+    turnChange('white');
   }
   gameState.figures = gameState.figures.filter((element) => {
     if (id === element.id) {
@@ -182,12 +218,14 @@ function turnChange (color) {
   tunrCount.innerText = gameState.currentTurn + ' turn!';
 }
 
-function calculateMoves() {
-  gameState.figures.forEach(e => {
+function calculateMoves (state) {
+  state.arrayOfMoves = [];
+  state.figures.forEach(e => {
     makeMove(e.id);
   });
-  Object.entries(gameState.boardSquare).forEach(entry => {
-    if (entry[1].canMove) gameState.arrayOfMoves.push(entry[1].id);
+
+  Object.entries(state.boardSquare).forEach(entry => {
+    if (entry[1].canMove) state.arrayOfMoves.push(entry[1].id);
   });
 }
 
@@ -216,7 +254,6 @@ function makeMove (id) {
   const topLeftId = getSquareId((x - 1), (y - 1));
 
   let moveset = [];
-  let index = 1;
 
   // Pawn variables
   let direction;
@@ -242,11 +279,19 @@ function makeMove (id) {
 
       // First double move
       if (figure.y === 6 && color === 'white') {
-        gameState.boardSquare[topId].canMove = true;
-        gameState.boardSquare[getSquareId(x, (y - 2))].canMove = true;
+        if (!gameState.boardSquare[topId].occupied) {
+          gameState.boardSquare[topId].canMove = true;
+        }
+        if (!gameState.boardSquare[getSquareId(x, (y - 2))].occupied) {
+          gameState.boardSquare[getSquareId(x, (y - 2))].canMove = true;
+        }
       } else if (figure.y === 1 && color === 'black') {
-        gameState.boardSquare[bottomId].canMove = true;
-        gameState.boardSquare[getSquareId(x, (y + 2))].canMove = true;
+        if (!gameState.boardSquare[bottomId].occupied) {
+          gameState.boardSquare[bottomId].canMove = true;
+        }
+        if (!gameState.boardSquare[getSquareId(x, (y + 2))].occupied) {
+          gameState.boardSquare[getSquareId(x, (y + 2))].canMove = true;
+        }
       }
 
       // Regular move
@@ -355,17 +400,18 @@ function makeMove (id) {
 
       break;
   }
+
   // Actual move
-  moveset.forEach(element => {
-    let localId = element;
+  moveset.forEach(move => {
+    let localId = move;
     let direction;
     if (figure.type !== 'king' && figure.type !== 'knight') {
-      localId = element.id;
-      direction = element.direction;
+      localId = move.id;
+      direction = move.direction;
     }
-    index = 1;
+    let index = 1;
     while (localId) {
-      if (localId === undefined) { break; }
+      if (localId === undefined) break; // {}
       if (!gameState.boardSquare[localId].occupied) gameState.boardSquare[localId].canMove = true;
       if (gameState.boardSquare[localId].occupied) {
         if (getFigureById(localId).color === color) break;
@@ -399,11 +445,11 @@ function makeMove (id) {
           localId = getSquareId(x - index, (y - index));
           break;
       }
-      console.log(localId, direction);
       index++;
     }
   });
 }
+
 function highLightMoves (id) {
   if (id) {
     const initialSquare = gameState.boardSquare[id];
@@ -412,12 +458,17 @@ function highLightMoves (id) {
 
   Object.entries(gameState.boardSquare).forEach(e => {
     if (e[1].canMove !== true) return;
+    const figure = getFigureById(e[1].id);
     const color = e[1].color;
     if (color === 'brown') {
       canva.fillSquare(e[1].x, e[1].y, 'rgb(63, 38, 13)');
     } else if (color === 'light') {
       canva.fillSquare(e[1].x, e[1].y, 'rgb(155, 122, 44)');
     }
+    if (e[1].occupied) canva.fillSquare(e[1].x, e[1].y, 'gray');
+    if (figure) {
+      if (figure.type === 'king') canva.fillSquare(e[1].x, e[1].y, 'red');
+    };
   });
   canva.figuresDraw(gameState.figures);
 }
@@ -483,6 +534,7 @@ canva.addEventListener('click', (e) => {
   }
   if (!squareId) return;
   if (figColor !== gameState.currentTurn) return;
+
   // if square occupied, then find figure on the square
   if (gameState.boardSquare[squareId].occupied && isFigurePicked === false) {
     isFigurePicked = true; // UNMUTE!!!!!!!!!!!!!!!!!
@@ -526,12 +578,12 @@ function figureMove (idIn) {
   canva.addEventListener('click', (e) => {
     const squareId = getSquareId(e.offsetX, e.offsetY);
 
-    if (!squareId) {
+    if (!squareId) { // Click on not a square
       isFigurePicked = false;
       render();
       return;
     }
-    if (gameState.boardSquare[squareId].canMove) {
+    if (gameState.boardSquare[squareId].canMove) { // Square is open for move
       figurePositionChange(squareId, idIn);
     }
 
