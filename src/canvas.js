@@ -34,7 +34,7 @@ function init () {
     ctx.restore();
   };
 
-  function createCheckBoard () {
+  function createCheckBoard (gameState) {
     let isBlack = true;
 
     for (let a = 0; a < 8; a++) {
@@ -58,7 +58,7 @@ function init () {
           color = 'brown';
         }
         if (IdsGiven < 64) {
-          giveId(i, a, color);
+          giveId(i, a, color, gameState);
           IdsGiven++;
         }
         if (IdsGiven === 64) {
@@ -84,7 +84,7 @@ function init () {
   }
 
   // fills array 'boardSquare' with objects contining ID and location of square
-  function giveId (i, a, color) {
+  function giveId (i, a, color, gameState) {
     const id = '' + letters[i] + numbers[a];
     const x = i;
     const y = a;
@@ -133,4 +133,4 @@ function init () {
   };
 }
 
-window.canvas = init();
+export const canva = init();

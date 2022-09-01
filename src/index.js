@@ -1,9 +1,9 @@
 // Next steps:
 // 1. Make a function to make squares avaliable to move;
 // 2. Make a function to find all avaliable moves;
-const canva = window.canvas;
+import {history} from "./history.js";
+import {canva} from "./canvas.js";
 
-const history = window.chessHistory;
 
 // MODEL
 const gameState = {
@@ -233,7 +233,7 @@ function calculateMoves (state) {
 
 function render () { // erases the screen, updates visual inforamtion
   canva.clear();
-  canva.createCheckBoard(); // draws checkbox
+  canva.createCheckBoard(gameState); // draws checkbox
   canva.figuresDraw(gameState.figures); // draws figures
 }
 

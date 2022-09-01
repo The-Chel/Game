@@ -103,5 +103,4 @@ class History {
     });
   }
 }
-const historyObj = new History();
-window.chessHistory = historyObj;
+export const history = new History();
