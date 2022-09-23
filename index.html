@@ -3,10 +3,11 @@
   <head>
     <title>Chess</title>
     <link rel="stylesheet" href="src/index.css">
+    <meta charset="UTF-8">
   </head>
   <body id="body">
     <div>
-      <button onclick="onButtonFigureDraw()" style="display: inline-block;">Add a1 figure</button>
+      <button id="addBtn" style="display: inline-block;">Add a1 figure</button>
       <input id="idInput" type="text" placeholder="Unput square Id (a1)" style="display: inline;">
       <select name="chooseFigure" id="dropDownFigures">
         <option value="pawn">Choose the figure</option>
@@ -24,8 +25,8 @@
         <input type="radio" id="black" name="color" value="black">
         <label for="black">Black</label>
       </div>
-      <button onclick="figDef()">Initial position</button>
-      <button onclick="figureRemove('all')">Remove all figures</button>  
+      <button id="figDefBtn">Initial position</button>
+      <button id="clearBtn">Remove all figures</button>  
     </div>
     <div>
       <div style="position: relative; margin-top: 15px;">
@@ -33,10 +34,10 @@
           <div style="text-align: center;">PROMOTION</div>
           <div>
             <div style ="position: absolute; bottom: 25px; left: 10px;">
-              <button id="yesButton" onclick="promotionResponse(event, 'yes')">Yes</button>
+              <button id="yesButton">Yes</button>
             </div>
             <div style ="position: absolute; bottom: 25px; right: 10px;">
-              <button id="noButton" onclick="promotionResponse(event, 'no')">No</button>
+              <button id="noButton">No</button>
             </div>
           </div>
       </div>
@@ -54,15 +55,12 @@
         </div>
 
       </div>
-      
+      </div>
     </div>
     <div style="width: 850px; display: flex; justify-content: center;">
-      <div onclick="render()" style="background-color: lightblue; width: 150px; height: 50px; display: flex; align-items: center; justify-content: center;">Render</div>
+      <div id="renderBtn" style="background-color: lightblue; width: 150px; height: 50px; display: flex; align-items: center; justify-content: center;">Render</div>
       <div  style="background-color: lightgreen; width: 150px; height: 50px; text-align: center; vertical-align: middle;">Test button</div>
     </div>
   </body>
-  <script type="text/javascript" src="src/history.js"></script>
-  <script type="text/javascript" src="src/canvas.js"></script>
-  <script type="text/javascript" src="src/index.js"></script>
-
+  <script type="text/javascript" src="dist/main.js"></script>
 </html>

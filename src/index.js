@@ -1,9 +1,8 @@
 // Next steps:
 // 1. Make a function to make squares avaliable to move;
 // 2. Make a function to find all avaliable moves;
-const canva = window.canvas;
-
-const history = window.chessHistory;
+import { history } from './history.js';
+import { canva } from './canvas.js';
 
 // MODEL
 const gameState = {
@@ -229,11 +228,34 @@ function calculateMoves (state) {
   });
 }
 
+function giveIds () {
+  let isWhite = true;
+  let color;
+  for (let i = 0; i < 8; i++) {
+    for (let a = 0; a < 8; a++) {
+      const id = '' + canva.letters[i] + canva.numbers[a];
+      const x = i;
+      const y = a;
+      if (isWhite) color = 'light';
+      else color = 'brown';
+      gameState.boardSquare[id] = ({
+        id,
+        x,
+        y,
+        color
+      });
+      isWhite = !isWhite;
+    }
+    isWhite = !isWhite;
+  }
+}
+giveIds();
+
 // VISUAL
 
 function render () { // erases the screen, updates visual inforamtion
   canva.clear();
-  canva.createCheckBoard(); // draws checkbox
+  canva.createCheckBoard(gameState); // draws checkbox
   canva.figuresDraw(gameState.figures); // draws figures
 }
 
@@ -495,7 +517,6 @@ function figDef () {
     delete entry[1].canMove;
     if (entry[1].occupied) delete entry[1].occupied;
   });
-
   // PAWNS
   for (let i = 0; i < 8; i++) {
     const idW = canva.letters[i] + '2';
@@ -525,7 +546,6 @@ function figDef () {
 }
 
 // CALCULATION
-
 canva.addEventListener('click', (e) => {
   const squareId = getSquareId(e.offsetX, e.offsetY);
   let figColor;
@@ -539,7 +559,7 @@ canva.addEventListener('click', (e) => {
   if (gameState.boardSquare[squareId].occupied && isFigurePicked === false) {
     isFigurePicked = true; // UNMUTE!!!!!!!!!!!!!!!!!
     canva.clear();
-    canva.createCheckBoard();
+    canva.createCheckBoard(gameState);
     makeMove(squareId);
     highLightMoves(squareId);
 
@@ -547,6 +567,7 @@ canva.addEventListener('click', (e) => {
 
     figureMove(squareId);
   }
+
   // wait until next mouse input, move figure to other square if is Empty = true
 });
 
@@ -706,3 +727,9 @@ function promTurn (e) {
 }
 render();
 figDef();
+document.getElementById('addBtn').addEventListener('click', onButtonFigureDraw);
+document.getElementById('figDefBtn').addEventListener('click', figDef);
+document.getElementById('clearBtn').addEventListener('click', function () { figureRemove('all'); });
+document.getElementById('renderBtn').addEventListener('click', render);
+document.getElementById('yesButton').addEventListener('click', function () { promotionResponse(event, 'yes'); });
+document.getElementById('noButton').addEventListener('click', function () { promotionResponse(event, 'no'); });
